@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tontine — Mes Liens</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F2544;--navy-mid:#1A3A6B;--gold:#C9933A;--gold-light:#E8B96A;--gold-pale:#FDF6E7;--cream:#FAFAF7;--text:#1C1C1E;--text-soft:#5A5A6A;--border:#DDD8CE;--success:#1A7A4A;--purple:#6D28D9;--radius:14px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"DM Sans",sans-serif;background:linear-gradient(160deg,var(--navy) 0%,var(--navy-mid) 60%,#1a4a8a 100%);min-height:100vh;padding-bottom:3rem;}
+
+/* LOGIN */
+.lock-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+.lock-card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:2.5rem 2rem;width:100%;max-width:340px;text-align:center;}
+.lock-icon{font-size:3rem;margin-bottom:1rem;}
+.lock-card h2{font-family:"Playfair Display",serif;color:#fff;font-size:1.4rem;margin-bottom:.4rem;}
+.lock-card p{color:rgba(255,255,255,.5);font-size:.82rem;margin-bottom:1.5rem;}
+.lock-input{width:100%;padding:13px 16px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:#fff;font-family:"DM Sans",sans-serif;font-size:.95rem;text-align:center;letter-spacing:.1em;margin-bottom:10px;}
+.lock-input::placeholder{color:rgba(255,255,255,.3);}
+.lock-input:focus{outline:none;border-color:var(--gold-light);}
+.lock-btn{width:100%;padding:13px;background:var(--gold);color:#fff;border:none;border-radius:10px;font-family:"DM Sans",sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:all .2s;}
+.lock-btn:hover{background:var(--gold-light);color:var(--navy);}
+.lock-error{color:#FCA5A5;font-size:.78rem;margin-top:8px;display:none;}
+.lock-error.show{display:block;}
+
+/* MAIN PAGE */
+.main{display:none;padding:2rem 1.5rem;max-width:480px;margin:0 auto;}
+
+/* PROFILE */
+.profile{text-align:center;margin-bottom:2rem;}
+.profile-avatar{width:80px;height:80px;background:rgba(201,147,58,.25);border:3px solid var(--gold);border-radius:50%;display:grid;place-items:center;font-size:2.2rem;margin:0 auto 1rem;}
+.profile h1{font-family:"Playfair Display",serif;color:#fff;font-size:1.5rem;margin-bottom:.3rem;}
+.profile p{color:rgba(255,255,255,.5);font-size:.82rem;}
+.gold-dot{width:8px;height:8px;background:var(--gold);border-radius:50%;display:inline-block;margin-right:6px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.3)}}
+
+/* SECTIONS */
+.section-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.35);margin:1.5rem 0 .6rem;padding-left:4px;}
+
+/* LINK CARDS */
+.link-card{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.07);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:1rem 1.2rem;margin-bottom:10px;cursor:pointer;transition:all .25s;text-decoration:none;}
+.link-card:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.25);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2);}
+.link-card.gold-card{background:rgba(201,147,58,.15);border-color:rgba(201,147,58,.35);}
+.link-card.gold-card:hover{background:rgba(201,147,58,.25);}
+.link-icon{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;font-size:1.3rem;flex-shrink:0;}
+.licon-green{background:rgba(26,122,74,.3);}
+.licon-blue{background:rgba(59,130,246,.25);}
+.licon-gold{background:rgba(201,147,58,.25);}
+.licon-purple{background:rgba(109,40,217,.3);}
+.licon-red{background:rgba(192,57,43,.25);}
+.licon-teal{background:rgba(20,184,166,.25);}
+.link-content{flex:1;}
+.link-title{font-weight:700;font-size:.92rem;color:#fff;margin-bottom:2px;}
+.link-desc{font-size:.73rem;color:rgba(255,255,255,.45);line-height:1.3;}
+.link-arrow{color:rgba(255,255,255,.25);font-size:1rem;}
+.admin-badge{background:rgba(109,40,217,.4);color:#C4B5FD;font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:20px;border:1px solid rgba(109,40,217,.5);margin-top:3px;display:inline-block;}
+.external-badge{background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);font-size:.62rem;font-weight:600;padding:2px 7px;border-radius:20px;margin-top:3px;display:inline-block;}
+
+/* COPY BUTTON */
+.copy-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:6px 12px;border-radius:8px;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.copy-btn:hover{background:rgba(201,147,58,.2);border-color:var(--gold);color:var(--gold-light);}
+.copy-btn.copied{background:rgba(26,122,74,.25);border-color:var(--success);color:#6EE7B7;}
+
+/* DIVIDER */
+.divider{height:1px;background:rgba(255,255,255,.08);margin:1.5rem 0;}
+
+/* LOGOUT */
+.logout-btn{width:100%;padding:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);border-radius:10px;font-family:"DM Sans",sans-serif;font-size:.82rem;cursor:pointer;margin-top:1rem;transition:all .2s;}
+.logout-btn:hover{background:rgba(192,57,43,.15);border-color:rgba(192,57,43,.4);color:#FCA5A5;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(15,37,68,.95);backdrop-filter:blur(10px);color:#fff;padding:10px 18px;border-radius:20px;font-size:.82rem;font-weight:600;z-index:1000;opacity:0;transition:opacity .3s;pointer-events:none;border:1px solid rgba(255,255,255,.1);}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-icon">🔐</div>
+    <h2>Mes Liens Tontine</h2>
+    <p>Entre ton code d'accès pour voir tous les liens</p>
+    <input type="password" class="lock-input" id="lockPwd" placeholder="• • • • • • • •" onkeydown="if(event.key==='Enter')unlock()">
+    <button class="lock-btn" onclick="unlock()">Accéder</button>
+    <div class="lock-error" id="lockErr">❌ Code incorrect</div>
+    <div style="margin-top:1.5rem;font-size:.72rem;color:rgba(255,255,255,.25);">Code par défaut : <strong style="color:rgba(255,255,255,.4);">tontine2024</strong></div>
+  </div>
+</div>
+
+<!-- MAIN LINKS PAGE -->
+<div class="main" id="mainPage">
+
+  <div class="profile">
+    <div class="profile-avatar">🤝</div>
+    <h1>Tontine Sécurisée</h1>
+    <p><span class="gold-dot"></span>Tous mes liens importants</p>
+  </div>
+
+  <!-- LIENS MEMBRES -->
+  <div class="section-label">👥 Liens à partager aux membres</div>
+
+  <div class="link-card gold-card" onclick="copyLink('https://corneliasuzie.github.io/Tontine/index.html', this)">
+    <div class="link-icon licon-gold">🏠</div>
+    <div class="link-content">
+      <div class="link-title">Page d'accueil principale</div>
+      <div class="link-desc">À envoyer à TOUS les membres</div>
+      <span class="external-badge">corneliasuzie.github.io/Tontine</span>
+    </div>
+    <button class="copy-btn" onclick="event.stopPropagation();copyLink('https://corneliasuzie.github.io/Tontine/index.html', this)">Copier</button>
+  </div>
+
+  <a class="link-card" href="https://corneliasuzie.github.io/Tontine/inscription_tontine.html" target="_blank">
+    <div class="link-icon licon-green">📝</div>
+    <div class="link-content">
+      <div class="link-title">Formulaire d'inscription</div>
+      <div class="link-desc">Pour les nouveaux membres au départ</div>
+    </div>
+    <span class="link-arrow">↗</span>
+  </a>
+
+  <a class="link-card" href="https://corneliasuzie.github.io/Tontine/formulaire_tontine_sheets.html" target="_blank">
+    <div class="link-icon licon-blue">💰</div>
+    <div class="link-content">
+      <div class="link-title">Formulaire de réception</div>
+      <div class="link-desc">Quand c'est le tour d'un membre</div>
+    </div>
+    <span class="link-arrow">↗</span>
+  </a>
+
+  <div class="divider"></div>
+
+  <!-- LIENS ADMIN -->
+  <div class="section-label">🔐 Mes outils admin</div>
+
+  <a class="link-card" href="https://corneliasuzie.github.io/Tontine/admin_tontine.html" target="_blank">
+    <div class="link-icon licon-purple">🛡️</div>
+    <div class="link-content">
+      <div class="link-title">Tableau de bord Admin</div>
+      <div class="link-desc">Approuver, gérer les membres et les rôles</div>
+      <span class="admin-badge">🔒 Admin seulement</span>
+    </div>
+    <span class="link-arrow">↗</span>
+  </a>
+
+  <div class="divider"></div>
+
+  <!-- OUTILS EXTERNES -->
+  <div class="section-label">☁️ Outils externes</div>
+
+  <a class="link-card" href="https://sheets.google.com" target="_blank">
+    <div class="link-icon licon-green">📊</div>
+    <div class="link-content">
+      <div class="link-title">Google Sheets</div>
+      <div class="link-desc">Voir toutes les soumissions en tableau</div>
+      <span class="external-badge">sheets.google.com</span>
+    </div>
+    <span class="link-arrow">↗</span>
+  </a>
+
+  <a class="link-card" href="https://drive.google.com" target="_blank">
+    <div class="link-icon licon-blue">📁</div>
+    <div class="link-content">
+      <div class="link-title">Google Drive</div>
+      <div class="link-desc">Photos CNI et selfies des membres</div>
+      <span class="external-badge">drive.google.com</span>
+    </div>
+    <span class="link-arrow">↗</span>
+  </a>
+
+  <a class="link-card" href="https://mail.google.com" target="_blank">
+    <div class="link-icon licon-red">📧</div>
+    <div class="link-content">
+      <div class="link-title">Gmail</div>
+      <div class="link-desc">Notifications automatiques des inscriptions</div>
+      <span class="external-badge">mail.google.com</span>
+    </div>
+    <span class="link-arrow">↗</span>
+  </a>
+
+  <a class="link-card" href="https://script.google.com" target="_blank">
+    <div class="link-icon licon-teal">⚙️</div>
+    <div class="link-content">
+      <div class="link-title">Google Apps Script</div>
+      <div class="link-desc">Mettre à jour le script backend</div>
+      <span class="external-badge">script.google.com</span>
+    </div>
+    <span class="link-arrow">↗</span>
+  </a>
+
+  <a class="link-card" href="https://github.com/corneliasuzie/Tontine" target="_blank">
+    <div class="link-icon" style="background:rgba(255,255,255,.1);">🐙</div>
+    <div class="link-content">
+      <div class="link-title">GitHub — Dépôt Tontine</div>
+      <div class="link-desc">Mettre à jour les fichiers HTML</div>
+      <span class="external-badge">github.com/corneliasuzie</span>
+    </div>
+    <span class="link-arrow">↗</span>
+  </a>
+
+  <div class="divider"></div>
+
+  <!-- CHANGER CODE -->
+  <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;">
+    <div style="font-size:.8rem;font-weight:700;color:rgba(255,255,255,.6);margin-bottom:.75rem;">🔑 Changer le code d'accès</div>
+    <div style="display:flex;gap:8px;">
+      <input type="password" id="newCode1" placeholder="Nouveau code" style="flex:1;padding:10px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;font-family:DM Sans,sans-serif;font-size:.85rem;">
+      <input type="password" id="newCode2" placeholder="Confirmer" style="flex:1;padding:10px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;font-family:DM Sans,sans-serif;font-size:.85rem;">
+      <button onclick="changeCode()" style="padding:10px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-family:DM Sans,sans-serif;font-weight:700;font-size:.8rem;cursor:pointer;white-space:nowrap;">Changer</button>
+    </div>
+  </div>
+
+  <button class="logout-btn" onclick="lockPage()">🔒 Verrouiller la page</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const K_LIENS_CODE = 'tontine_liens_code';
+const DEFAULT_CODE = 'tontine2024';
+
+function getCode(){ return localStorage.getItem(K_LIENS_CODE) || DEFAULT_CODE; }
+
+function unlock(){
+  const pwd = document.getElementById('lockPwd').value;
+  if(pwd !== getCode()){
+    document.getElementById('lockErr').classList.add('show');
+    document.getElementById('lockPwd').value='';
+    return;
+  }
+  sessionStorage.setItem('liens_unlocked','1');
+  document.getElementById('lockScreen').style.display='none';
+  document.getElementById('mainPage').style.display='block';
+}
+
+function lockPage(){
+  sessionStorage.removeItem('liens_unlocked');
+  location.reload();
+}
+
+function changeCode(){
+  const c1=document.getElementById('newCode1').value;
+  const c2=document.getElementById('newCode2').value;
+  if(!c1||c1.length<4){showToast('❌ Code trop court (min 4 caractères)');return;}
+  if(c1!==c2){showToast('❌ Les codes ne correspondent pas');return;}
+  localStorage.setItem(K_LIENS_CODE,c1);
+  document.getElementById('newCode1').value='';
+  document.getElementById('newCode2').value='';
+  showToast('✅ Code changé avec succès !');
+}
+
+function copyLink(url, btn){
+  navigator.clipboard.writeText(url).then(()=>{
+    if(btn && btn.classList.contains('copy-btn')){
+      btn.textContent='✓ Copié !';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copier';btn.classList.remove('copied');},2000);
+    }
+    showToast('✅ Lien copié dans le presse-papiers !');
+  }).catch(()=>{
+    showToast('📋 '+url);
+  });
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+window.onload=()=>{
+  if(sessionStorage.getItem('liens_unlocked')){
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('mainPage').style.display='block';
+  }
+};
+</script>
+</body>
+</html>
