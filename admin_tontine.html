@@ -171,8 +171,13 @@
         <div class="stat-card s-pending"><div class="stat-val" id="statPending">0</div><div class="stat-label">En attente</div></div>
         <div class="stat-card s-rejected"><div class="stat-val" id="statRejected">0</div><div class="stat-label">Refusés</div></div>
       </div>
+      <div class="filter-tabs" style="margin-bottom:8px;">
+        <button class="ftab active" onclick="switchSource('all',this)">👥 Tous</button>
+        <button class="ftab" onclick="switchSource('inscrits',this)">📝 Inscrits</button>
+        <button class="ftab" onclick="switchSource('beneficiaires',this)">💰 Bénéficiaires</button>
+      </div>
       <div class="filter-tabs">
-        <button class="ftab active" onclick="switchFilter('all',this)">Tous</button>
+        <button class="ftab active" onclick="switchFilter('all',this)">Tous statuts</button>
         <button class="ftab" onclick="switchFilter('pending',this)">⏳ Attente</button>
         <button class="ftab" onclick="switchFilter('approved',this)">✅ Approuvés</button>
         <button class="ftab" onclick="switchFilter('rejected',this)">❌ Refusés</button>
@@ -238,7 +243,7 @@
 
 <script>
 const K_SUPER_PWD='tontine_super_pwd', K_ADMINS='tontine_admins', K_URL='tontine_script_url', K_SESSION='tontine_session', K_STATUS='tontine_status', DEFAULT_SUPER='superadmin2024';
-let members=[], currentFilter='all', loginRole='superadmin';
+let members=[], currentFilter='all', currentSource='all', loginRole='superadmin';
 
 function selectRole(r){loginRole=r;document.getElementById('roleSuper').classList.toggle('active',r==='superadmin');document.getElementById('roleAdmin').classList.toggle('active',r==='admin');document.getElementById('loginHint').style.display=r==='superadmin'?'block':'none';}
 
@@ -275,24 +280,37 @@ function showDashboard(){
   if(isSA) renderAdminsList();
 }
 
+let inscrits=[], beneficiaires=[];
+
 async function loadMembers(url){
   document.getElementById('memberList').innerHTML='<div class="empty-state"><div class="icon">⏳</div><p>Chargement…</p></div>';
   try{
     const r=await fetch(url+'?action=getMembers'), d=await r.json();
-    if(d.members){members=d.members;mergeStatuses();renderStats();renderMembers();populateMemberSelect();}
+    inscrits = d.inscrits||[]; beneficiaires = d.beneficiaires||[];
+    // Merge into members based on active tab
+    mergeAll(); renderStats(); renderMembers(); populateMemberSelect();
   } catch{
-    members=JSON.parse(localStorage.getItem('tontine_demo')||'[]');
-    mergeStatuses();renderStats();renderMembers();populateMemberSelect();
+    inscrits=[]; beneficiaires=[];
+    mergeAll(); renderStats(); renderMembers(); populateMemberSelect();
   }
 }
 
-function mergeStatuses(){const s=JSON.parse(localStorage.getItem(K_STATUS)||'{}');members.forEach(m=>{m.status=s[m.cni]||m.status||'pending';});}
+function mergeAll(){
+  const s=JSON.parse(localStorage.getItem(K_STATUS)||'{}');
+  [...inscrits,...beneficiaires].forEach(m=>{m.status=s[m.cni]||m.status||'pending';});
+  if(currentSource==='inscrits') members=inscrits;
+  else if(currentSource==='beneficiaires') members=beneficiaires;
+  else members=[...inscrits,...beneficiaires].filter((m,i,a)=>a.findIndex(x=>x.cni===m.cni)===i);
+}
+
+function mergeStatuses(){mergeAll();}
 
 function renderStats(){
-  document.getElementById('statTotal').textContent=members.length;
-  document.getElementById('statApproved').textContent=members.filter(m=>m.status==='approved').length;
-  document.getElementById('statPending').textContent=members.filter(m=>m.status==='pending').length;
-  document.getElementById('statRejected').textContent=members.filter(m=>m.status==='rejected').length;
+  const allM=[...inscrits,...beneficiaires].filter((m,i,a)=>a.findIndex(x=>x.cni===m.cni)===i);
+  document.getElementById('statTotal').textContent=allM.length;
+  document.getElementById('statApproved').textContent=allM.filter(m=>{const s=JSON.parse(localStorage.getItem(K_STATUS)||'{}');return (s[m.cni]||m.status)==='approved';}).length;
+  document.getElementById('statPending').textContent=allM.filter(m=>{const s=JSON.parse(localStorage.getItem(K_STATUS)||'{}');return (s[m.cni]||m.status)==='pending';}).length;
+  document.getElementById('statRejected').textContent=allM.filter(m=>{const s=JSON.parse(localStorage.getItem(K_STATUS)||'{}');return (s[m.cni]||m.status)==='rejected';}).length;
 }
 
 function renderMembers(){
@@ -417,7 +435,8 @@ function showPage(page,el){
   document.getElementById('page-'+page).classList.add('active'); el.classList.add('active');
   if(page==='admins'){renderAdminsList();populateMemberSelect();}
 }
-function switchFilter(f,el){currentFilter=f;document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderMembers();}
+function switchFilter(f,el){currentFilter=f;el.parentNode.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderMembers();}
+function switchSource(s,el){currentSource=s;el.parentNode.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));el.classList.add('active');mergeAll();renderStats();renderMembers();}
 function toggleDet(id){document.getElementById(id).classList.toggle('open');}
 function openLightbox(src){document.getElementById('lightboxImg').src=src;document.getElementById('lightbox').classList.add('open');}
 function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
