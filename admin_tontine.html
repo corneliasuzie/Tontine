@@ -161,6 +161,7 @@
     <div class="page-nav" id="pageNav">
       <button class="page-tab active" onclick="showPage('members',this)">👥 Membres</button>
       <button class="page-tab" id="tabAdmins" onclick="showPage('admins',this)">🛡️ Gérer les admins</button>
+      <button class="page-tab" id="tabManuel" onclick="showPage('manuel',this)">✏️ Membres manuels</button>
       <button class="page-tab" onclick="showPage('settings',this)">⚙️ Paramètres</button>
     </div>
 
@@ -205,6 +206,28 @@
       <div class="admins-list" id="adminsList"></div>
     </div>
 
+    <!-- PAGE : MEMBRES MANUELS -->
+    <div class="page" id="page-manuel">
+      <div class="add-admin-card" style="margin-bottom:1rem;">
+        <h3>➕ Ajouter un membre manuellement</h3>
+        <p style="font-size:.78rem;color:var(--text-soft);margin-bottom:12px">Pour les membres sans accès au formulaire en ligne.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div><label style="font-size:.72rem;font-weight:600;text-transform:uppercase;color:var(--text-soft);display:block;margin-bottom:4px">Nom *</label><input type="text" id="manNom" placeholder="MBARGA" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:DM Sans,sans-serif;font-size:.88rem;"></div>
+          <div><label style="font-size:.72rem;font-weight:600;text-transform:uppercase;color:var(--text-soft);display:block;margin-bottom:4px">Prénom *</label><input type="text" id="manPrenom" placeholder="Jean Paul" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:DM Sans,sans-serif;font-size:.88rem;"></div>
+          <div><label style="font-size:.72rem;font-weight:600;text-transform:uppercase;color:var(--text-soft);display:block;margin-bottom:4px">N° CNI *</label><input type="text" id="manCni" placeholder="CM-12345678" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:DM Sans,sans-serif;font-size:.88rem;"></div>
+          <div><label style="font-size:.72rem;font-weight:600;text-transform:uppercase;color:var(--text-soft);display:block;margin-bottom:4px">Téléphone *</label><input type="tel" id="manTel" placeholder="+237 6XX XX XX XX" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:DM Sans,sans-serif;font-size:.88rem;"></div>
+          <div><label style="font-size:.72rem;font-weight:600;text-transform:uppercase;color:var(--text-soft);display:block;margin-bottom:4px">Email</label><input type="email" id="manEmail" placeholder="email@exemple.com" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:DM Sans,sans-serif;font-size:.88rem;"></div>
+          <div><label style="font-size:.72rem;font-weight:600;text-transform:uppercase;color:var(--text-soft);display:block;margin-bottom:4px">Ville</label><input type="text" id="manVille" placeholder="Yaoundé" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:DM Sans,sans-serif;font-size:.88rem;"></div>
+        </div>
+        <button class="btn-grant" style="background:var(--navy);" onclick="addManualMember()">➕ Ajouter ce membre</button>
+      </div>
+
+      <h3 style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:.75rem;">Membres ajoutés manuellement</h3>
+      <div id="manualMembersList" style="display:flex;flex-direction:column;gap:10px;">
+        <div class="empty-state"><div class="icon">✏️</div><p>Aucun membre ajouté manuellement.</p></div>
+      </div>
+    </div>
+
     <div class="page" id="page-settings">
       <div class="settings-section">
         <h3>🔗 Connexion Google Sheets</h3>
@@ -224,6 +247,22 @@
           <button class="btn-save-set" onclick="changeSuperPwd()">Changer</button>
         </div>
       </div>
+      <div class="settings-section">
+        <h3>🔑 Gestion des mots de passe membres</h3>
+        <p style="font-size:.82rem;color:var(--text-soft);margin-bottom:12px;line-height:1.5">Définis ou modifie le mot de passe d'un membre pour qu'il puisse se connecter à la page d'accueil.</p>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:.72rem;font-weight:600;text-transform:uppercase;color:var(--text-soft);display:block;margin-bottom:5px;">Choisir un membre</label>
+          <select id="pwdMemberSelect" class="member-select" style="margin-bottom:8px;" onchange="fillMemberPwdInfo()">
+            <option value="">— Choisir un membre —</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <input type="text" id="pwdNewValue" placeholder="Nouveau mot de passe" style="flex:1;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:DM Sans,sans-serif;font-size:.88rem;">
+          <button class="btn-save-set" onclick="setMemberPassword()">Définir</button>
+        </div>
+        <div id="pwdCurrentInfo" style="font-size:.78rem;color:var(--text-soft);padding:8px 12px;background:#F3F4F6;border-radius:8px;display:none;"></div>
+      </div>
+
       <div class="settings-section">
         <h3>ℹ️ Rôles et permissions</h3>
         <p style="font-size:.85rem;color:var(--text-soft);line-height:1.7">
@@ -274,10 +313,15 @@ function showDashboard(){
   document.getElementById('roleBadge').textContent=isSA?'👑 Super-Admin':'🛡️ Admin';
   document.getElementById('roleBadge').className='role-badge '+(isSA?'badge-superadmin':'badge-admin');
   document.getElementById('tabAdmins').style.display=isSA?'':'none';
+  document.getElementById('tabManuel').style.display=isSA?'':'none';
   document.getElementById('superAdminSettings').style.display=isSA?'':'none';
   const url=localStorage.getItem(K_URL)||'';
   if(url){document.getElementById('adminScriptUrl').value=url;loadMembers(url);}
   if(isSA) renderAdminsList();
+  setTimeout(populatePwdSelect, 1000);
+  // Load manual members into inscrits
+  const manual=getManualMembers();
+  manual.forEach(m=>{if(!inscrits.some(x=>x.cni===m.cni)) inscrits.push(m);});
 }
 
 let inscrits=[], beneficiaires=[];
@@ -363,7 +407,27 @@ function setStatus(cni,status){
   const s=JSON.parse(localStorage.getItem(K_STATUS)||'{}'); s[cni]=status; localStorage.setItem(K_STATUS,JSON.stringify(s));
   renderStats();renderMembers();
   showToast({approved:'✅ Membre approuvé !',rejected:'❌ Membre refusé.',pending:'⏳ Remis en attente.'}[status]);
-  const url=localStorage.getItem(K_URL); if(url) fetch(url+`?action=updateStatus&cni=${encodeURIComponent(cni)}&status=${status}`).catch(()=>{});
+  // Notify via Apps Script (email + WhatsApp prep)
+  const url=localStorage.getItem(K_URL);
+  if(url) fetch(url+`?action=updateStatus&cni=${encodeURIComponent(cni)}&status=${status}&tel=${encodeURIComponent(m&&m.tel||'')}&&nom=${encodeURIComponent(m&&m.prenom+' '+m.nom||'')}&&email=${encodeURIComponent(m&&m.email||'')}`)
+    .then(r=>r.json()).then(d=>{ if(d.whatsappUrl) openWhatsApp(d.whatsappUrl,m,status); }).catch(()=>{});
+  // Fallback: open WhatsApp directly
+  if(m && m.tel) setTimeout(()=>promptWhatsApp(m,status),500);
+}
+
+function promptWhatsApp(m,status){
+  const msg = status==='approved'
+    ? `Bonjour ${m.prenom} 👋\n\n✅ *Bonne nouvelle !* Ton dossier a été *approuvé* par l'administratrice de la tontine.\n\nTu fais maintenant officiellement partie du groupe. Bienvenue ! 🎉\n\n_Tontine Sécurisée_`
+    : status==='rejected'
+    ? `Bonjour ${m.prenom} 👋\n\n❌ Ton dossier a été *refusé* par l'administratrice de la tontine.\n\nPour plus d'informations, contacte directement le responsable du groupe.\n\n_Tontine Sécurisée_`
+    : null;
+  if(!msg) return;
+  const tel = m.tel.replace(/[^0-9]/g,'''');
+  const url = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
+  // Show confirmation modal
+  if(confirm(`Envoyer une notification WhatsApp à ${m.prenom} ${m.nom} ?`)){
+    window.open(url,'_blank');
+  }
 }
 
 function getAdmins(){try{return JSON.parse(localStorage.getItem(K_ADMINS)||'[]');}catch{return[];}}
@@ -429,11 +493,107 @@ function changeSuperPwd(){
   showToast('✅ Mot de passe super-admin changé !');
 }
 
+// ── MANUAL MEMBERS ───────────────────────────────────────────────────────
+const K_MANUAL = 'tontine_manual_members';
+
+function getManualMembers(){try{return JSON.parse(localStorage.getItem(K_MANUAL)||'[]');}catch{return[];}}
+function saveManualMembers(arr){localStorage.setItem(K_MANUAL,JSON.stringify(arr));}
+
+function addManualMember(){
+  const nom=document.getElementById('manNom').value.trim();
+  const prenom=document.getElementById('manPrenom').value.trim();
+  const cni=document.getElementById('manCni').value.trim();
+  const tel=document.getElementById('manTel').value.trim();
+  const email=document.getElementById('manEmail').value.trim();
+  const ville=document.getElementById('manVille').value.trim();
+  if(!nom||!prenom||!cni||!tel){showToast('❌ Nom, prénom, CNI et téléphone sont requis');return;}
+  const manual=getManualMembers();
+  if(manual.some(m=>m.cni===cni)||members.some(m=>m.cni===cni)){showToast('⚠️ Ce CNI existe déjà');return;}
+  const newMember={cni,nom,prenom,tel,email,ville,source:'manuel',status:'pending',dateSoumission:new Date().toLocaleString('fr-FR')};
+  manual.push(newMember);
+  saveManualMembers(manual);
+  // Also push to main members list
+  inscrits.push(newMember);
+  mergeAll();
+  // Send to Apps Script
+  const url=localStorage.getItem(K_URL);
+  if(url) fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'inscription_manuelle',...newMember})}).catch(()=>{});
+  document.getElementById('manNom').value='';document.getElementById('manPrenom').value='';
+  document.getElementById('manCni').value='';document.getElementById('manTel').value='';
+  document.getElementById('manEmail').value='';document.getElementById('manVille').value='';
+  showToast(`✅ ${prenom} ${nom} ajouté(e) !`);
+  renderManualList();renderStats();renderMembers();
+}
+
+function deleteManualMember(cni){
+  if(!confirm('Supprimer ce membre ?')) return;
+  saveManualMembers(getManualMembers().filter(m=>m.cni!==cni));
+  inscrits=inscrits.filter(m=>!(m.cni===cni&&m.source==='manuel'));
+  mergeAll();renderManualList();renderStats();renderMembers();
+  showToast('🗑️ Membre supprimé.');
+}
+
+function renderManualList(){
+  const manual=getManualMembers();
+  const list=document.getElementById('manualMembersList');
+  if(!list) return;
+  if(!manual.length){list.innerHTML='<div class="empty-state"><div class="icon">✏️</div><p>Aucun membre ajouté manuellement.</p></div>';return;}
+  list.innerHTML=manual.map(m=>`
+    <div class="admin-card">
+      <div class="admin-avatar">👤</div>
+      <div class="admin-info"><div class="admin-name">${m.prenom} ${m.nom}</div><div class="admin-meta">${m.tel} · ${m.ville||'—'}</div></div>
+      <button class="btn-revoke" onclick="deleteManualMember('${m.cni}')">Supprimer</button>
+    </div>`).join('');
+}
+
+// ── MEMBER PASSWORDS ─────────────────────────────────────────────────────
+const K_MEMBERS_PWD = 'tontine_members_pwd';
+
+function getMembersPwd(){try{return JSON.parse(localStorage.getItem(K_MEMBERS_PWD)||'{}');}catch{return{};}}
+function saveMembersPwd(db){localStorage.setItem(K_MEMBERS_PWD,JSON.stringify(db));}
+
+function populatePwdSelect(){
+  const sel=document.getElementById('pwdMemberSelect'); if(!sel) return;
+  const allM=[...inscrits,...beneficiaires].filter((m,i,a)=>a.findIndex(x=>x.cni===m.cni)===i);
+  sel.innerHTML='<option value="">— Choisir un membre —</option>'+allM.map(m=>`<option value="${m.cni}" data-tel="${m.tel}" data-nom="${m.nom}" data-prenom="${m.prenom}">${m.prenom} ${m.nom} — ${m.tel}</option>`).join('');
+}
+
+function fillMemberPwdInfo(){
+  const sel=document.getElementById('pwdMemberSelect');
+  const cni=sel.value; if(!cni){document.getElementById('pwdCurrentInfo').style.display='none';return;}
+  const db=getMembersPwd();
+  const tel=sel.selectedOptions[0].dataset.tel;
+  const info=document.getElementById('pwdCurrentInfo');
+  if(db[tel]){info.textContent='Mot de passe actuel : '+db[tel].pwd;info.style.display='block';}
+  else{info.textContent='Aucun mot de passe défini pour ce membre.';info.style.display='block';}
+}
+
+function setMemberPassword(){
+  const sel=document.getElementById('pwdMemberSelect');
+  const cni=sel.value; const pwd=document.getElementById('pwdNewValue').value.trim();
+  if(!cni){showToast('❌ Sélectionne un membre');return;}
+  if(!pwd||pwd.length<4){showToast('❌ Mot de passe trop court (min 4 car.)');return;}
+  const opt=sel.selectedOptions[0];
+  const tel=opt.dataset.tel, nom=opt.dataset.nom, prenom=opt.dataset.prenom;
+  const db=getMembersPwd();
+  db[tel]={pwd,nom,prenom,cni};
+  saveMembersPwd(db);
+  document.getElementById('pwdNewValue').value='';
+  fillMemberPwdInfo();
+  showToast(`✅ Mot de passe défini pour ${prenom} ${nom} !`);
+  // Notify member via WhatsApp
+  const msg = `Bonjour ${prenom} 👋\n\nTon compte Tontine a été créé !\n\n🔑 Voici tes identifiants de connexion :\n📱 Téléphone : ${tel}\n🔒 Mot de passe : ${pwd}\n\nConnecte-toi ici : https://corneliasuzie.github.io/Tontine/index.html\n\n_Tontine Sécurisée_`;
+  const cleanTel = tel.replace(/[^0-9]/g,'');
+  if(confirm(`Envoyer les identifiants à ${prenom} ${nom} par WhatsApp ?`)){
+    window.open(`https://wa.me/${cleanTel}?text=${encodeURIComponent(msg)}`,'_blank');
+  }
+}
+
 function showPage(page,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.page-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active'); el.classList.add('active');
-  if(page==='admins'){renderAdminsList();populateMemberSelect();}
+  if(page==='admins'){renderAdminsList();populateMemberSelect();} if(page==='manuel'){renderManualList();} if(page==='settings'){populatePwdSelect();}
 }
 function switchFilter(f,el){currentFilter=f;el.parentNode.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderMembers();}
 function switchSource(s,el){currentSource=s;el.parentNode.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));el.classList.add('active');mergeAll();renderStats();renderMembers();}
