@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -183,7 +182,7 @@
 
 <div class="progress-wrap">
   <div class="progress-steps" id="progressSteps"></div>
-  <div class="progress-label">Étape <strong id="stepNum">1</strong> sur <strong>5</strong> — <span id="stepName">Identité</span></div>
+  <div class="progress-label">Étape <strong id="stepNum">1</strong> sur <strong>6</strong> — <span id="stepName">Identité</span></div>
 </div>
 
 <div class="form-body">
@@ -199,8 +198,8 @@
       <div class="field"><label>Date de naissance <span class="req">*</span></label><input type="date" id="dob"><div class="field-error" id="err-dob">Requis.</div></div>
       <div class="field"><label>N° CNI <span class="req">*</span></label><input type="text" id="cni" placeholder="CM-12345678"><div class="field-error" id="err-cni">Requis.</div></div>
     </div>
-    <div class="field"><label>Téléphone <span class="req">*</span></label><input type="tel" id="tel" placeholder="+237 6XX XX XX XX"><div class="field-error" id="err-tel">Requis.</div></div>
-    <div class="field"><label>Email (facultatif)</label><input type="email" id="email" placeholder="ton@email.com"></div>
+    <div class="field"><label>Téléphone <span class="req">*</span></label><input type="tel" id="tel" placeholder="+237 6XX XX XX XX" oninput="formatTel(this)"><div class="field-error" id="err-tel">Requis.</div><div class="field-hint">Format : +237 6XX XX XX XX</div></div>
+    <div class="field"><label>Email (facultatif)</label><input type="email" id="email" placeholder="ton@email.com"><div class="field-error" id="err-email" style="display:none">Email invalide.</div></div>
   </div>
 
   <!-- STEP 2 -->
@@ -243,9 +242,29 @@
     </div>
   </div>
 
-  <!-- STEP 4 -->
+  <!-- STEP 4 : SELFIE -->
   <div class="step" data-step="4">
-    <div class="step-title"><div class="step-num">4</div><h2>Confirmation de réception</h2></div>
+    <div class="step-title"><div class="step-num">4</div><h2>Selfie de vérification</h2></div>
+    <div class="info-box">🤳 Prends une photo de ton visage pour confirmer que c'est bien toi qui remplis ce formulaire.</div>
+    <div class="field">
+      <label>Ton selfie <span class="req">*</span></label>
+      <div class="photo-upload" id="area-selfie" style="max-width:240px;margin:0 auto;padding:2rem 1rem;">
+        <input type="file" id="selfie" accept="image/*" capture="user" onchange="previewPhoto(this,'prev-selfie','area-selfie','err-selfie')">
+        <div class="photo-icon" style="font-size:3rem">🤳</div>
+        <p style="font-size:.85rem;margin-top:4px">Appuie pour te prendre en photo</p>
+        <small>Caméra frontale recommandée</small>
+        <img id="prev-selfie" class="photo-preview" style="height:150px;border-radius:50%;object-fit:cover;margin:12px auto;">
+      </div>
+      <div class="field-error" id="err-selfie" style="text-align:center;margin-top:8px;">Selfie requis.</div>
+    </div>
+    <div class="info-box" style="margin-top:1rem;background:#EFF6FF;border-left-color:#3B82F6;color:#1E3A5F;">
+      💡 Visage bien visible, bien éclairé, sans lunettes de soleil.
+    </div>
+  </div>
+
+  <!-- STEP 5 : RÉCEPTION -->
+  <div class="step" data-step="5">
+    <div class="step-title"><div class="step-num">5</div><h2>Confirmation de réception</h2></div>
     <div class="field"><label>Montant reçu (FCFA) <span class="req">*</span></label><input type="number" id="montant" placeholder="50000" min="0" oninput="updateAmount()"><div class="field-error" id="err-montant">Requis.</div></div>
     <div class="amount-display" id="amountDisplay" style="display:none"><label>Montant confirmé</label><div class="amount-val" id="amountVal"></div></div>
     <div class="field-row">
@@ -260,9 +279,9 @@
     <div class="field"><label>N° de transaction (facultatif)</label><input type="text" id="transactionId" placeholder="TXN-2024-XXXXXX"><div class="field-hint">Numéro de confirmation reçu par SMS.</div></div>
   </div>
 
-  <!-- STEP 5 -->
-  <div class="step" data-step="5">
-    <div class="step-title"><div class="step-num">5</div><h2>Tes engagements</h2></div>
+  <!-- STEP 6 : ENGAGEMENTS -->
+  <div class="step" data-step="6">
+    <div class="step-title"><div class="step-num">6</div><h2>Tes engagements</h2></div>
     <div class="info-box">✅ Coche chaque point pour confirmer ton accord. Tous sont obligatoires.</div>
     <div class="commitment-list">
       <label class="commitment-item"><input type="checkbox" class="check-box commitment"><span class="commitment-text">Je confirme avoir reçu la somme indiquée en bonne et due forme.</span></label>
@@ -368,7 +387,7 @@ function showSetupGuide() {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────
-const STEPS_META = ['Identité','Adresse','Photo CNI','Réception','Engagements'];
+const STEPS_META = ['Identité','Adresse','Photo CNI','Selfie','Réception','Engagements'];
 let current = 0;
 
 function init() {
@@ -428,7 +447,33 @@ function req(ids) {
 }
 
 function validateStep() {
-  if (current===0) return req(['nom','prenom','dob','cni','tel']);
+  if (current===0) {
+    let ok = req(['nom','prenom','dob','cni','tel']);
+    // Validate phone length
+    const tel = document.getElementById('tel').value.replace(/[^0-9+]/g,'');
+    if (tel.length > 0 && tel.length < 9) {
+      document.getElementById('err-tel').textContent = 'Numéro trop court.';
+      document.getElementById('err-tel').classList.add('show');
+      document.getElementById('tel').classList.add('error');
+      ok = false;
+    }
+    // Validate email if filled
+    const email = document.getElementById('email').value;
+    if (email && !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+      document.getElementById('err-email').style.display = 'block';
+      ok = false;
+    } else {
+      document.getElementById('err-email').style.display = 'none';
+    }
+    // Validate CNI not empty (already done) + min length
+    const cni = document.getElementById('cni').value.trim();
+    if (cni && cni.length < 5) {
+      document.getElementById('err-cni').textContent = 'N° CNI trop court.';
+      document.getElementById('err-cni').classList.add('show');
+      ok = false;
+    }
+    return ok;
+  }
   if (current===1) return req(['quartier','ville','region','pays']);
   if (current===2) {
     let ok = true;
@@ -439,8 +484,15 @@ function validateStep() {
     });
     return ok;
   }
-  if (current===3) return req(['montant','dateRecep','tour','mode']);
-  if (current===4) {
+  if (current===3) {
+    // Selfie
+    const hasSelfie = document.getElementById('selfie').files.length > 0;
+    document.getElementById('err-selfie').classList.toggle('show', !hasSelfie);
+    if (!hasSelfie) return false;
+    return true;
+  }
+  if (current===4) return req(['montant','dateRecep','tour','mode']);
+  if (current===5) {
     const allChecked = [...document.querySelectorAll('.commitment')].every(b=>b.checked);
     if (!allChecked) { alert('Tu dois cocher tous les engagements.'); return false; }
     if (sigEmpty()) { document.getElementById('err-sig').classList.add('show'); return false; }
@@ -562,6 +614,7 @@ async function submitForm() {
     signature: document.getElementById('sigCanvas').toDataURL('image/png'),
     cniRecto: document.getElementById('prev-recto').src || '',
     cniVerso: document.getElementById('prev-verso').src || '',
+    selfie: document.getElementById('prev-selfie').src || '',
   };
 
   document.getElementById('sendingOverlay').classList.add('active');
