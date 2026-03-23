@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tontine — Accueil</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F2544;--navy-mid:#1A3A6B;--gold:#C9933A;--gold-light:#E8B96A;--gold-pale:#FDF6E7;--cream:#FAFAF7;--text:#1C1C1E;--text-soft:#5A5A6A;--border:#DDD8CE;--success:#1A7A4A;--error:#C0392B;--purple:#6D28D9;--radius:14px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"DM Sans",sans-serif;background:var(--cream);min-height:100vh;}
+
+/* HEADER */
+.header{background:linear-gradient(160deg,var(--navy),var(--navy-mid));padding:2.5rem 1.5rem 3.5rem;text-align:center;position:relative;overflow:hidden;}
+.header::before{content:"";position:absolute;top:-60px;right:-60px;width:250px;height:250px;border-radius:50%;background:rgba(201,147,58,.09);}
+.header::after{content:"";position:absolute;bottom:-40px;left:-40px;width:180px;height:180px;border-radius:50%;background:rgba(201,147,58,.06);}
+.logo{font-size:3rem;margin-bottom:.75rem;position:relative;z-index:1;}
+.header h1{font-family:"Playfair Display",serif;font-size:1.9rem;color:#fff;margin-bottom:.4rem;position:relative;z-index:1;}
+.header p{color:rgba(255,255,255,.6);font-size:.85rem;position:relative;z-index:1;}
+.gold-bar{height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-top:1.5rem;position:relative;z-index:1;}
+
+/* MEMBER BAR */
+.member-bar{background:#fff;border-bottom:1px solid var(--border);padding:.75rem 1.5rem;display:flex;justify-content:space-between;align-items:center;}
+.member-bar.hidden{display:none;}
+.member-greeting{font-size:.85rem;font-weight:600;color:var(--navy);}
+.member-greeting span{color:var(--gold);}
+.btn-logout-sm{background:var(--gold-pale);border:1px solid var(--gold);color:var(--navy);padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:600;cursor:pointer;}
+
+.body{padding:1.5rem;max-width:480px;margin:0 auto;}
+.section-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-soft);margin:1.25rem 0 .75rem;padding-left:4px;}
+
+/* CARDS */
+.card{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:1.2rem;display:flex;align-items:center;gap:14px;margin-bottom:10px;cursor:pointer;transition:all .2s;text-decoration:none;color:var(--text);}
+.card:hover{border-color:var(--gold);box-shadow:0 4px 20px rgba(15,37,68,.08);transform:translateY(-1px);}
+.card.locked{opacity:.7;}
+.card.locked:hover{border-color:var(--border);transform:none;box-shadow:none;}
+.card-icon{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:1.4rem;flex-shrink:0;}
+.icon-green{background:#D1FAE5;} .icon-blue{background:#DBEAFE;} .icon-gold{background:var(--gold-pale);} .icon-purple{background:#EDE9FE;} .icon-gray{background:#F3F4F6;}
+.card-content{flex:1;}
+.card-title{font-weight:700;font-size:.93rem;color:var(--navy);margin-bottom:2px;}
+.card-desc{font-size:.77rem;color:var(--text-soft);line-height:1.4;}
+.lock-badge{background:#EDE9FE;color:var(--purple);font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:4px;display:inline-block;}
+.card-arrow{color:var(--border);font-size:1.1rem;flex-shrink:0;}
+
+/* LOGIN CARD */
+.login-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;}
+.login-card h3{font-size:.95rem;font-weight:700;color:var(--navy);margin-bottom:1rem;}
+.field{margin-bottom:.9rem;}
+.field label{display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-soft);margin-bottom:5px;}
+.field input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:"DM Sans",sans-serif;font-size:.9rem;background:#fff;}
+.field input:focus{outline:none;border-color:var(--navy);}
+.btn-login{width:100%;padding:13px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-family:"DM Sans",sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s;}
+.btn-login:hover{background:var(--navy-mid);}
+.login-error{background:#FEE2E2;color:#7F1D1D;border-radius:8px;padding:8px 12px;font-size:.78rem;margin-top:8px;display:none;}
+.login-error.show{display:block;}
+
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;place-items:center;padding:1rem;}
+.modal.open{display:grid;}
+.modal-box{background:#fff;border-radius:18px;width:100%;max-width:340px;overflow:hidden;animation:pop .25s ease;}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-header{background:var(--navy);padding:16px 18px;display:flex;justify-content:space-between;align-items:center;}
+.modal-header h3{color:#fff;font-size:.95rem;}
+.modal-close{background:none;border:none;color:rgba(255,255,255,.6);font-size:1.2rem;cursor:pointer;}
+.modal-body{padding:18px;}
+.modal-icon{font-size:2.5rem;text-align:center;margin-bottom:.75rem;}
+.modal-body p{font-size:.85rem;color:var(--text-soft);line-height:1.6;text-align:center;margin-bottom:1.25rem;}
+.modal-btn{width:100%;padding:12px;border:none;border-radius:10px;font-family:"DM Sans",sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;margin-bottom:7px;}
+.modal-btn-primary{background:var(--navy);color:#fff;}
+.modal-btn-secondary{background:var(--gold-pale);color:var(--navy);border:1px solid var(--gold);}
+
+.footer{text-align:center;padding:2rem 1rem;font-size:.75rem;color:var(--text-soft);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🤝</div>
+  <h1>Notre Tontine</h1>
+  <p>Bienvenue ! Connecte-toi ou inscris-toi.</p>
+  <div class="gold-bar"></div>
+</div>
+
+<!-- Barre membre connecté -->
+<div class="member-bar hidden" id="memberBar">
+  <div class="member-greeting">Bonjour, <span id="memberName">—</span> 👋</div>
+  <button class="btn-logout-sm" onclick="logoutMember()">Déconnexion</button>
+</div>
+
+<div class="body">
+
+  <!-- Si non connecté : affiche login -->
+  <div id="loginSection">
+    <div class="login-card">
+      <h3>🔑 Connexion membre</h3>
+      <div class="field">
+        <label>Numéro de téléphone</label>
+        <input type="tel" id="loginTel" placeholder="+237 6XX XX XX XX">
+      </div>
+      <div class="field">
+        <label>Mot de passe</label>
+        <input type="password" id="loginPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')loginMember()">
+      </div>
+      <button class="btn-login" onclick="loginMember()">Se connecter</button>
+      <div class="login-error" id="loginErr">❌ Téléphone ou mot de passe incorrect.</div>
+    </div>
+    <p style="text-align:center;font-size:.78rem;color:var(--text-soft);">Pas encore inscrit(e) ? <a href="inscription_tontine.html" style="color:var(--navy);font-weight:600;">S'inscrire ici →</a></p>
+  </div>
+
+  <!-- Menu principal (visible après connexion) -->
+  <div id="mainMenu" style="display:none;">
+
+    <div class="section-title">👤 Espace Membres</div>
+
+    <a class="card" href="formulaire_tontine_sheets.html" id="cardReception">
+      <div class="card-icon icon-blue">💰</div>
+      <div class="card-content">
+        <div class="card-title">Confirmer une réception de fonds</div>
+        <div class="card-desc">C'est ton tour ? Remplis le formulaire de réception.</div>
+      </div>
+      <span class="card-arrow">›</span>
+    </a>
+
+    <div class="section-title">🔐 Espace Administration</div>
+
+    <div class="card" id="cardAdmin" onclick="goAdmin()">
+      <div class="card-icon icon-purple">🛡️</div>
+      <div class="card-content">
+        <div class="card-title">Tableau de bord Admin</div>
+        <div class="card-desc">Gérer les membres, approuver, gérer les rôles.</div>
+        <span class="lock-badge">🔒 Admins uniquement</span>
+      </div>
+      <span class="card-arrow">›</span>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">Tontine Sécurisée — Tous droits réservés</div>
+
+<!-- MODAL accès refusé -->
+<div class="modal" id="modalLock">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Accès restreint</h3>
+      <button class="modal-close" onclick="closeModal('modalLock')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-icon">🔒</div>
+      <p>Cette section est réservée aux <strong>administrateurs</strong> de la tontine.<br><br>Si tu es admin, clique sur "Continuer" pour accéder avec ton mot de passe admin.</p>
+      <button class="modal-btn modal-btn-primary" onclick="window.location.href='admin_tontine.html'">Continuer vers l'espace admin</button>
+      <button class="modal-btn modal-btn-secondary" onclick="closeModal('modalLock')">Retour</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const K_MEMBERS_PWD = 'tontine_members_pwd'; // {tel: {nom, prenom, pwd, cni}}
+const K_MEMBER_SESSION = 'tontine_member_session';
+
+// ── LOAD SAVED MEMBERS PASSWORDS ─────────────────────────────────────────
+function getMembersPwd(){ try{return JSON.parse(localStorage.getItem(K_MEMBERS_PWD)||'{}');}catch{return{};} }
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────
+function loginMember(){
+  const tel = document.getElementById('loginTel').value.trim().replace(/\s/g,'');
+  const pwd = document.getElementById('loginPwd').value;
+  const db  = getMembersPwd();
+  // Find by tel
+  const key = Object.keys(db).find(k => k.replace(/\s/g,'') === tel);
+  if(!key || db[key].pwd !== pwd){
+    document.getElementById('loginErr').classList.add('show'); return;
+  }
+  document.getElementById('loginErr').classList.remove('show');
+  sessionStorage.setItem(K_MEMBER_SESSION, JSON.stringify({tel:key, ...db[key]}));
+  showMemberMenu(db[key]);
+}
+
+function showMemberMenu(member){
+  document.getElementById('loginSection').style.display='none';
+  document.getElementById('mainMenu').style.display='block';
+  document.getElementById('memberBar').classList.remove('hidden');
+  document.getElementById('memberName').textContent = member.prenom+' '+member.nom;
+}
+
+function logoutMember(){
+  sessionStorage.removeItem(K_MEMBER_SESSION);
+  location.reload();
+}
+
+function goAdmin(){ document.getElementById('modalLock').classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+// ── AUTO SESSION ──────────────────────────────────────────────────────────
+window.onload = () => {
+  const s = sessionStorage.getItem(K_MEMBER_SESSION);
+  if(s){ try{ showMemberMenu(JSON.parse(s)); }catch{} }
+};
+</script>
+</body>
+</html>
