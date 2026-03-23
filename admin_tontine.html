@@ -417,12 +417,12 @@ function setStatus(cni,status){
 
 function promptWhatsApp(m,status){
   const msg = status==='approved'
-    ? `Bonjour ${m.prenom} 👋\n\n✅ *Bonne nouvelle !* Ton dossier a été *approuvé* par l'administratrice de la tontine.\n\nTu fais maintenant officiellement partie du groupe. Bienvenue ! 🎉\n\n_Tontine Sécurisée_`
+    ? "Bonjour " + m.prenom + " \n\n Bonne nouvelle ! Ton dossier a ete approuve par l administratrice de la tontine.\n\nTu fais maintenant officiellement partie du groupe. Bienvenue !\n\n_Tontine Securisee_"
     : status==='rejected'
-    ? `Bonjour ${m.prenom} 👋\n\n❌ Ton dossier a été *refusé* par l'administratrice de la tontine.\n\nPour plus d'informations, contacte directement le responsable du groupe.\n\n_Tontine Sécurisée_`
+    ? "Bonjour " + m.prenom + " \n\n Ton dossier a ete refuse par l administratrice de la tontine.\n\nContacte directement le responsable du groupe.\n\n_Tontine Securisee_"
     : null;
   if(!msg) return;
-  const tel = m.tel.replace(/[^0-9]/g,'''');
+  const tel = m.tel.replace(/[^0-9]/g,'');
   const url = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
   // Show confirmation modal
   if(confirm(`Envoyer une notification WhatsApp à ${m.prenom} ${m.nom} ?`)){
@@ -582,7 +582,7 @@ function setMemberPassword(){
   fillMemberPwdInfo();
   showToast(`✅ Mot de passe défini pour ${prenom} ${nom} !`);
   // Notify member via WhatsApp
-  const msg = `Bonjour ${prenom} 👋\n\nTon compte Tontine a été créé !\n\n🔑 Voici tes identifiants de connexion :\n📱 Téléphone : ${tel}\n🔒 Mot de passe : ${pwd}\n\nConnecte-toi ici : https://corneliasuzie.github.io/Tontine/index.html\n\n_Tontine Sécurisée_`;
+  const msg = "Bonjour " + prenom + " \n\nTon compte Tontine a ete cree !\n\nTelephone : " + tel + "\nMot de passe : " + pwd + "\n\nConnecte-toi ici : https://corneliasuzie.github.io/Tontine/index.html\n\n_Tontine Securisee_";
   const cleanTel = tel.replace(/[^0-9]/g,'');
   if(confirm(`Envoyer les identifiants à ${prenom} ${nom} par WhatsApp ?`)){
     window.open(`https://wa.me/${cleanTel}?text=${encodeURIComponent(msg)}`,'_blank');
