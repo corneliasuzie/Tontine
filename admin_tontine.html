@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tontine — Espace Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0F2544;--navy-mid:#1A3A6B;--gold:#C9933A;--gold-light:#E8B96A;--gold-pale:#FDF6E7;--cream:#FAFAF7;--text:#1C1C1E;--text-soft:#5A5A6A;--border:#DDD8CE;--success:#1A7A4A;--error:#C0392B;--warning:#D97706;--purple:#6D28D9;--radius:12px;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;}
+  .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,var(--navy),var(--navy-mid));padding:1rem;}
+  .login-card{background:#fff;border-radius:20px;padding:2.5rem 2rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;}
+  .login-logo{font-size:3rem;margin-bottom:1rem;}
+  .login-card h1{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--navy);margin-bottom:.4rem;}
+  .login-card .sub{font-size:.85rem;color:var(--text-soft);margin-bottom:1.5rem;}
+  .role-toggle{display:flex;gap:6px;margin-bottom:1.25rem;}
+  .role-btn{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--text-soft);transition:all .2s;}
+  .role-btn.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .login-field{margin-bottom:1rem;text-align:left;}
+  .login-field label{display:block;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-soft);margin-bottom:6px;}
+  .login-field input{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:.95rem;}
+  .login-field input:focus{outline:none;border-color:var(--navy);}
+  .btn-login{width:100%;padding:15px;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s;}
+  .btn-login:hover{background:var(--navy-mid);}
+  .login-error{background:#FEE2E2;color:#7F1D1D;border-radius:8px;padding:10px 14px;font-size:.82rem;margin-top:1rem;display:none;}
+  .login-error.show{display:block;}
+  .login-hint{background:var(--gold-pale);border:1px solid var(--gold);border-radius:8px;padding:10px 14px;font-size:.78rem;color:var(--navy);margin-top:1rem;text-align:left;}
+  .dashboard{display:none;}
+  .dash-header{background:linear-gradient(160deg,var(--navy),var(--navy-mid));padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+  .dash-header-left h1{font-family:'Playfair Display',serif;font-size:1.1rem;color:#fff;}
+  .dash-header-left p{font-size:.72rem;color:rgba(255,255,255,.5);margin-top:2px;}
+  .header-right{display:flex;align-items:center;gap:8px;}
+  .role-badge{padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+  .badge-superadmin{background:rgba(201,147,58,.25);color:var(--gold-light);border:1px solid rgba(201,147,58,.4);}
+  .badge-admin{background:rgba(109,40,217,.25);color:#C4B5FD;border:1px solid rgba(109,40,217,.4);}
+  .btn-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:7px 12px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;}
+  .dash-body{padding:1.5rem;max-width:960px;margin:0 auto;}
+  .page-nav{display:flex;gap:4px;background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:4px;margin-bottom:1.5rem;overflow-x:auto;}
+  .page-tab{flex-shrink:0;padding:9px 14px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;background:none;color:var(--text-soft);transition:all .2s;white-space:nowrap;}
+  .page-tab.active{background:var(--navy);color:#fff;}
+  .page{display:none;}.page.active{display:block;}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem;}
+  .stat-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center;}
+  .stat-val{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;color:var(--navy);}
+  .stat-label{font-size:.72rem;color:var(--text-soft);margin-top:2px;}
+  .stat-card.s-approved .stat-val{color:var(--success);}
+  .stat-card.s-pending .stat-val{color:var(--warning);}
+  .stat-card.s-rejected .stat-val{color:var(--error);}
+  .filter-tabs{display:flex;gap:4px;background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:4px;margin-bottom:1rem;}
+  .ftab{flex:1;padding:8px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;background:none;color:var(--text-soft);transition:all .2s;}
+  .ftab.active{background:var(--navy);color:#fff;}
+  .search-bar{position:relative;margin-bottom:1rem;}
+  .search-bar input{width:100%;padding:12px 16px 12px 40px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:.9rem;background:#fff;}
+  .search-bar input:focus{outline:none;border-color:var(--navy);}
+  .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1rem;}
+  .member-list{display:flex;flex-direction:column;gap:10px;}
+  .member-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:box-shadow .2s;}
+  .member-card:hover{box-shadow:0 4px 20px rgba(15,37,68,.08);}
+  .member-card.approved{border-left:4px solid var(--success);}
+  .member-card.pending{border-left:4px solid var(--warning);}
+  .member-card.rejected{border-left:4px solid var(--error);}
+  .member-header{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;}
+  .member-avatar{width:42px;height:42px;border-radius:50%;flex-shrink:0;background:var(--gold-pale);display:grid;place-items:center;font-size:1.1rem;border:2px solid var(--border);overflow:hidden;}
+  .member-avatar img{width:100%;height:100%;object-fit:cover;}
+  .member-info{flex:1;min-width:0;}
+  .member-name{font-weight:600;font-size:.92rem;color:var(--navy);}
+  .member-meta{font-size:.75rem;color:var(--text-soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .badges-row{display:flex;gap:4px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;}
+  .mbadge{padding:3px 8px;border-radius:20px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+  .mbadge-approved{background:#D1FAE5;color:#065F46;}
+  .mbadge-pending{background:#FEF3C7;color:#92400E;}
+  .mbadge-rejected{background:#FEE2E2;color:#7F1D1D;}
+  .mbadge-admin{background:#EDE9FE;color:#5B21B6;}
+  .member-details{display:none;padding:0 16px 16px;border-top:1px solid var(--border);}
+  .member-details.open{display:block;}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;}
+  .detail-item span:first-child{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-soft);}
+  .detail-item span:last-child{font-weight:600;color:var(--navy);font-size:.85rem;}
+  .photos-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .photo-thumb{width:80px;height:58px;border-radius:8px;object-fit:cover;border:1.5px solid var(--border);cursor:pointer;transition:transform .2s;}
+  .photo-thumb:hover{transform:scale(1.05);}
+  .selfie-thumb{width:58px;height:58px;border-radius:50%;}
+  .photo-label{font-size:.68rem;color:var(--text-soft);text-align:center;margin-top:3px;}
+  .sig-img{max-height:48px;border:1px solid var(--border);border-radius:6px;margin-top:4px;}
+  .action-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+  .abtn{padding:9px 14px;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-weight:600;font-size:.8rem;cursor:pointer;transition:all .2s;flex:1;min-width:110px;}
+  .abtn-approve{background:var(--success);color:#fff;}
+  .abtn-reject{background:var(--error);color:#fff;}
+  .abtn-pending{background:var(--warning);color:#fff;}
+  .abtn-makeadmin{background:var(--purple);color:#fff;}
+  .abtn-revokeadmin{background:#6B7280;color:#fff;}
+  .abtn:hover{filter:brightness(1.1);}
+  .admins-list{display:flex;flex-direction:column;gap:10px;}
+  .admin-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px;}
+  .admin-avatar{width:40px;height:40px;border-radius:50%;background:var(--gold-pale);display:grid;place-items:center;font-size:1.1rem;flex-shrink:0;overflow:hidden;}
+  .admin-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+  .admin-info{flex:1;}
+  .admin-name{font-weight:600;font-size:.92rem;}
+  .admin-meta{font-size:.75rem;color:var(--text-soft);}
+  .btn-revoke{padding:7px 14px;background:#FEE2E2;color:var(--error);border:1px solid #FCA5A5;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;}
+  .btn-revoke:hover{background:var(--error);color:#fff;}
+  .add-admin-card{background:#fff;border:2px dashed var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;}
+  .add-admin-card h3{font-size:.9rem;font-weight:700;margin-bottom:.75rem;color:var(--navy);}
+  .member-select{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:.88rem;margin-bottom:10px;background:#fff;}
+  .member-select:focus{outline:none;border-color:var(--navy);}
+  .btn-grant{width:100%;padding:13px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;}
+  .settings-section{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;}
+  .settings-section h3{font-size:.95rem;font-weight:700;color:var(--navy);margin-bottom:1rem;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  .sfield{margin-bottom:1rem;}
+  .sfield label{display:block;font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-soft);margin-bottom:6px;}
+  .sfield input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:.88rem;}
+  .srow{display:flex;gap:8px;}
+  .srow input{flex:1;}
+  .btn-save-set{padding:12px 18px;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;}
+  .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:999;place-items:center;}
+  .lightbox.open{display:grid;}
+  .lightbox img{max-width:92vw;max-height:92vh;border-radius:8px;}
+  .lightbox-close{position:absolute;top:16px;right:16px;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;}
+  .empty-state{text-align:center;padding:3rem 1rem;color:var(--text-soft);}
+  .empty-state .icon{font-size:3rem;margin-bottom:1rem;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:20px;font-size:.85rem;font-weight:600;z-index:1000;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+  .toast.show{opacity:1;}
+  @media(max-width:520px){.stats-grid{grid-template-columns:1fr 1fr;}.detail-grid{grid-template-columns:1fr;}.abtn{min-width:unset;}}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">🔐</div>
+    <h1>Espace Admin</h1>
+    <p class="sub">Tontine Sécurisée — Accès restreint</p>
+    <p style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-soft);margin-bottom:8px;text-align:left;">Tu es :</p>
+    <div class="role-toggle">
+      <button class="role-btn active" id="roleSuper" onclick="selectRole('superadmin')">👑 Super-Admin</button>
+      <button class="role-btn" id="roleAdmin" onclick="selectRole('admin')">🛡️ Admin</button>
+    </div>
+    <div class="login-field">
+      <label>Mot de passe</label>
+      <input type="password" id="pwdInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <button class="btn-login" onclick="login()">Accéder au tableau de bord</button>
+    <div class="login-error" id="loginError">❌ Mot de passe incorrect.</div>
+    <div class="login-hint" id="loginHint">💡 <strong>Première connexion :</strong> mot de passe super-admin par défaut : <strong>superadmin2024</strong></div>
+  </div>
+</div>
+
+<div class="dashboard" id="dashboard">
+  <div class="dash-header">
+    <div class="dash-header-left">
+      <h1>🤝 Tontine — Espace Admin</h1>
+      <p id="sessionLabel">Connecté(e)</p>
+    </div>
+    <div class="header-right">
+      <span class="role-badge" id="roleBadge"></span>
+      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+  <div class="dash-body">
+    <div class="page-nav" id="pageNav">
+      <button class="page-tab active" onclick="showPage('members',this)">👥 Membres</button>
+      <button class="page-tab" id="tabAdmins" onclick="showPage('admins',this)">🛡️ Gérer les admins</button>
+      <button class="page-tab" onclick="showPage('settings',this)">⚙️ Paramètres</button>
+    </div>
+
+    <div class="page active" id="page-members">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val" id="statTotal">0</div><div class="stat-label">Total</div></div>
+        <div class="stat-card s-approved"><div class="stat-val" id="statApproved">0</div><div class="stat-label">Approuvés</div></div>
+        <div class="stat-card s-pending"><div class="stat-val" id="statPending">0</div><div class="stat-label">En attente</div></div>
+        <div class="stat-card s-rejected"><div class="stat-val" id="statRejected">0</div><div class="stat-label">Refusés</div></div>
+      </div>
+      <div class="filter-tabs">
+        <button class="ftab active" onclick="switchFilter('all',this)">Tous</button>
+        <button class="ftab" onclick="switchFilter('pending',this)">⏳ Attente</button>
+        <button class="ftab" onclick="switchFilter('approved',this)">✅ Approuvés</button>
+        <button class="ftab" onclick="switchFilter('rejected',this)">❌ Refusés</button>
+      </div>
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Rechercher par nom, téléphone, CNI…" oninput="renderMembers()">
+      </div>
+      <div class="member-list" id="memberList">
+        <div class="empty-state"><div class="icon">📋</div><p>Configure l'URL du script dans Paramètres pour charger les données.</p></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-admins">
+      <div class="add-admin-card">
+        <h3>➕ Accorder les droits admin à un membre</h3>
+        <select class="member-select" id="memberSelectForAdmin"><option value="">— Choisir un membre —</option></select>
+        <div class="sfield">
+          <label>Mot de passe à lui attribuer</label>
+          <input type="text" id="newAdminPwd" placeholder="Ex : admin_jean2024">
+        </div>
+        <button class="btn-grant" onclick="grantAdmin()">🛡️ Accorder les droits admin</button>
+      </div>
+      <h3 style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:.75rem;">Admins actuels</h3>
+      <div class="admins-list" id="adminsList"></div>
+    </div>
+
+    <div class="page" id="page-settings">
+      <div class="settings-section">
+        <h3>🔗 Connexion Google Sheets</h3>
+        <div class="sfield">
+          <label>URL du Google Apps Script</label>
+          <div class="srow">
+            <input type="url" id="adminScriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+            <button class="btn-save-set" onclick="saveAdminUrl()">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section" id="superAdminSettings">
+        <h3>👑 Mot de passe Super-Admin</h3>
+        <div class="srow">
+          <input type="password" id="newSuperPwd1" placeholder="Nouveau mot de passe">
+          <input type="password" id="newSuperPwd2" placeholder="Confirmer">
+          <button class="btn-save-set" onclick="changeSuperPwd()">Changer</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>ℹ️ Rôles et permissions</h3>
+        <p style="font-size:.85rem;color:var(--text-soft);line-height:1.7">
+          <strong>👑 Super-Admin (toi) :</strong> accès complet — voir tous les membres, approuver/refuser, nommer ou révoquer des admins, changer tous les mots de passe.<br><br>
+          <strong>🛡️ Admin :</strong> peut voir les membres et approuver/refuser, mais ne peut pas gérer les autres admins ni modifier les paramètres sensibles.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close">✕</button>
+  <img id="lightboxImg" src="">
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const K_SUPER_PWD='tontine_super_pwd', K_ADMINS='tontine_admins', K_URL='tontine_script_url', K_SESSION='tontine_session', K_STATUS='tontine_status', DEFAULT_SUPER='superadmin2024';
+let members=[], currentFilter='all', loginRole='superadmin';
+
+function selectRole(r){loginRole=r;document.getElementById('roleSuper').classList.toggle('active',r==='superadmin');document.getElementById('roleAdmin').classList.toggle('active',r==='admin');document.getElementById('loginHint').style.display=r==='superadmin'?'block':'none';}
+
+function login(){
+  const pwd=document.getElementById('pwdInput').value, err=document.getElementById('loginError');
+  err.classList.remove('show');
+  if(loginRole==='superadmin'){
+    const saved=localStorage.getItem(K_SUPER_PWD)||DEFAULT_SUPER;
+    if(pwd!==saved){err.classList.add('show');document.getElementById('pwdInput').value='';return;}
+    sessionStorage.setItem(K_SESSION,JSON.stringify({role:'superadmin'}));
+  } else {
+    const admins=getAdmins(), found=admins.find(a=>a.pwd===pwd);
+    if(!found){err.classList.add('show');document.getElementById('pwdInput').value='';return;}
+    sessionStorage.setItem(K_SESSION,JSON.stringify({role:'admin',cni:found.cni,name:found.prenom+' '+found.nom}));
+  }
+  showDashboard();
+}
+
+function logout(){sessionStorage.removeItem(K_SESSION);location.reload();}
+function getSession(){try{return JSON.parse(sessionStorage.getItem(K_SESSION));}catch{return null;}}
+function isSuperAdmin(){const s=getSession();return s&&s.role==='superadmin';}
+
+function showDashboard(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  const s=getSession(), isSA=s.role==='superadmin';
+  document.getElementById('sessionLabel').textContent=isSA?'Super-Administratrice':(s.name||'Administrateur(ice)');
+  document.getElementById('roleBadge').textContent=isSA?'👑 Super-Admin':'🛡️ Admin';
+  document.getElementById('roleBadge').className='role-badge '+(isSA?'badge-superadmin':'badge-admin');
+  document.getElementById('tabAdmins').style.display=isSA?'':'none';
+  document.getElementById('superAdminSettings').style.display=isSA?'':'none';
+  const url=localStorage.getItem(K_URL)||'';
+  if(url){document.getElementById('adminScriptUrl').value=url;loadMembers(url);}
+  if(isSA) renderAdminsList();
+}
+
+async function loadMembers(url){
+  document.getElementById('memberList').innerHTML='<div class="empty-state"><div class="icon">⏳</div><p>Chargement…</p></div>';
+  try{
+    const r=await fetch(url+'?action=getMembers'), d=await r.json();
+    if(d.members){members=d.members;mergeStatuses();renderStats();renderMembers();populateMemberSelect();}
+  } catch{
+    members=JSON.parse(localStorage.getItem('tontine_demo')||'[]');
+    mergeStatuses();renderStats();renderMembers();populateMemberSelect();
+  }
+}
+
+function mergeStatuses(){const s=JSON.parse(localStorage.getItem(K_STATUS)||'{}');members.forEach(m=>{m.status=s[m.cni]||m.status||'pending';});}
+
+function renderStats(){
+  document.getElementById('statTotal').textContent=members.length;
+  document.getElementById('statApproved').textContent=members.filter(m=>m.status==='approved').length;
+  document.getElementById('statPending').textContent=members.filter(m=>m.status==='pending').length;
+  document.getElementById('statRejected').textContent=members.filter(m=>m.status==='rejected').length;
+}
+
+function renderMembers(){
+  const q=document.getElementById('searchInput').value.toLowerCase(), admins=getAdmins(), isSA=isSuperAdmin();
+  let f=members.filter(m=>{
+    if(currentFilter!=='all'&&m.status!==currentFilter) return false;
+    if(q) return (m.nom+m.prenom+m.tel+m.cni).toLowerCase().includes(q);
+    return true;
+  });
+  const list=document.getElementById('memberList');
+  if(!f.length){list.innerHTML='<div class="empty-state"><div class="icon">🔍</div><p>Aucun membre trouvé.</p></div>';return;}
+  list.innerHTML=f.map((m,i)=>{
+    const isAdm=admins.some(a=>a.cni===m.cni);
+    const sl={approved:'Approuvé',pending:'En attente',rejected:'Refusé'}[m.status]||'En attente';
+    const bc={approved:'mbadge-approved',pending:'mbadge-pending',rejected:'mbadge-rejected'}[m.status]||'mbadge-pending';
+    const sh=m.selfie?`<div><img src="${m.selfie}" class="photo-thumb selfie-thumb" onclick="openLightbox('${m.selfie}')"><div class="photo-label">Selfie</div></div>`:'';
+    const rh=m.cniRecto?`<div><img src="${m.cniRecto}" class="photo-thumb" onclick="openLightbox('${m.cniRecto}')"><div class="photo-label">Recto</div></div>`:'';
+    const vh=m.cniVerso?`<div><img src="${m.cniVerso}" class="photo-thumb" onclick="openLightbox('${m.cniVerso}')"><div class="photo-label">Verso</div></div>`:'';
+    const ab=m.status!=='approved'?`<button class="abtn abtn-approve" onclick="setStatus('${m.cni}','approved')">✅ Approuver</button>`:'';
+    const rb=m.status!=='rejected'?`<button class="abtn abtn-reject" onclick="setStatus('${m.cni}','rejected')">❌ Refuser</button>`:'';
+    const pb=m.status!=='pending'?`<button class="abtn abtn-pending" onclick="setStatus('${m.cni}','pending')">⏳ Attente</button>`:'';
+    const admBtn=isSA?(isAdm?`<button class="abtn abtn-revokeadmin" onclick="revokeAdminByCni('${m.cni}')">🚫 Retirer admin</button>`:`<button class="abtn abtn-makeadmin" onclick="quickGrantAdmin('${m.cni}','${m.nom}','${m.prenom}','${m.selfie||''}')">🛡️ Nommer admin</button>`):'';
+    return `<div class="member-card ${m.status}" id="mc-${i}">
+      <div class="member-header" onclick="toggleDet('md-${i}')">
+        <div class="member-avatar">${m.selfie?`<img src="${m.selfie}">`:'👤'}</div>
+        <div class="member-info"><div class="member-name">${m.prenom} ${m.nom}</div><div class="member-meta">${m.tel} · Tour N°${m.tour||'?'} · ${m.montant?parseInt(m.montant).toLocaleString('fr-FR')+' FCFA':''}</div></div>
+        <div class="badges-row"><span class="mbadge ${bc}">${sl}</span>${isAdm?'<span class="mbadge mbadge-admin">Admin</span>':''}</div>
+      </div>
+      <div class="member-details" id="md-${i}">
+        <div class="detail-grid">
+          <div class="detail-item"><span>N° CNI</span><span>${m.cni}</span></div>
+          <div class="detail-item"><span>Date naissance</span><span>${m.dob||'—'}</span></div>
+          <div class="detail-item"><span>Adresse</span><span>${m.quartier||''}, ${m.ville||''}</span></div>
+          <div class="detail-item"><span>Mode réception</span><span>${m.mode||'—'}</span></div>
+          <div class="detail-item"><span>Date réception</span><span>${m.dateRecep||'—'}</span></div>
+          <div class="detail-item"><span>Montant</span><span>${m.montant?parseInt(m.montant).toLocaleString('fr-FR')+' FCFA':'—'}</span></div>
+          <div class="detail-item"><span>N° Transaction</span><span>${m.transactionId||'—'}</span></div>
+          <div class="detail-item"><span>Email</span><span>${m.email||'—'}</span></div>
+        </div>
+        ${sh||rh||vh?`<p style="font-size:.72rem;font-weight:600;text-transform:uppercase;color:var(--text-soft);margin-bottom:8px">Photos</p><div class="photos-row">${sh}${rh}${vh}</div>`:''}
+        ${m.signature?`<p style="font-size:.72rem;font-weight:600;text-transform:uppercase;color:var(--text-soft);margin-bottom:4px">Signature</p><img src="${m.signature}" class="sig-img">`:''}
+        <div class="action-row">${ab}${rb}${pb}${admBtn}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setStatus(cni,status){
+  const m=members.find(x=>x.cni===cni); if(m) m.status=status;
+  const s=JSON.parse(localStorage.getItem(K_STATUS)||'{}'); s[cni]=status; localStorage.setItem(K_STATUS,JSON.stringify(s));
+  renderStats();renderMembers();
+  showToast({approved:'✅ Membre approuvé !',rejected:'❌ Membre refusé.',pending:'⏳ Remis en attente.'}[status]);
+  const url=localStorage.getItem(K_URL); if(url) fetch(url+`?action=updateStatus&cni=${encodeURIComponent(cni)}&status=${status}`).catch(()=>{});
+}
+
+function getAdmins(){try{return JSON.parse(localStorage.getItem(K_ADMINS)||'[]');}catch{return[];}}
+function saveAdmins(a){localStorage.setItem(K_ADMINS,JSON.stringify(a));}
+
+function grantAdmin(){
+  const cni=document.getElementById('memberSelectForAdmin').value, pwd=document.getElementById('newAdminPwd').value.trim();
+  if(!cni){showToast('❌ Sélectionne un membre');return;}
+  if(!pwd||pwd.length<4){showToast('❌ Mot de passe trop court (min 4 car.)');return;}
+  const m=members.find(x=>x.cni===cni); if(!m){showToast('❌ Membre introuvable');return;}
+  const admins=getAdmins(); if(admins.some(a=>a.cni===cni)){showToast('⚠️ Déjà admin');return;}
+  admins.push({cni,nom:m.nom,prenom:m.prenom,tel:m.tel,selfie:m.selfie||'',pwd});
+  saveAdmins(admins);
+  document.getElementById('memberSelectForAdmin').value=''; document.getElementById('newAdminPwd').value='';
+  showToast(`✅ ${m.prenom} ${m.nom} est maintenant admin !`);
+  renderAdminsList();renderMembers();
+}
+
+function quickGrantAdmin(cni,nom,prenom,selfie){
+  const pwd=prompt(`Définis un mot de passe pour ${prenom} ${nom} :`);
+  if(!pwd) return; if(pwd.length<4){showToast('❌ Mot de passe trop court');return;}
+  const admins=getAdmins(); if(admins.some(a=>a.cni===cni)){showToast('⚠️ Déjà admin');return;}
+  admins.push({cni,nom,prenom,selfie,pwd}); saveAdmins(admins);
+  showToast(`✅ ${prenom} ${nom} est maintenant admin !`);
+  renderAdminsList();renderMembers();
+}
+
+function revokeAdminByCni(cni){
+  saveAdmins(getAdmins().filter(a=>a.cni!==cni));
+  showToast('🚫 Droits admin retirés.');
+  renderAdminsList();renderMembers();
+}
+
+function renderAdminsList(){
+  const admins=getAdmins(), list=document.getElementById('adminsList');
+  if(!admins.length){list.innerHTML='<div class="empty-state"><div class="icon">🛡️</div><p>Aucun admin pour l\'instant.</p></div>';return;}
+  list.innerHTML=admins.map(a=>`
+    <div class="admin-card">
+      <div class="admin-avatar">${a.selfie?`<img src="${a.selfie}">`:'👤'}</div>
+      <div class="admin-info"><div class="admin-name">${a.prenom} ${a.nom} <span class="mbadge mbadge-admin" style="font-size:.65rem">Admin</span></div><div class="admin-meta">${a.tel||a.cni}</div></div>
+      <button class="btn-revoke" onclick="revokeAdminByCni('${a.cni}')">Retirer</button>
+    </div>`).join('');
+}
+
+function populateMemberSelect(){
+  const admins=getAdmins(), sel=document.getElementById('memberSelectForAdmin');
+  sel.innerHTML='<option value="">— Choisir un membre —</option>'+
+    members.filter(m=>!admins.some(a=>a.cni===m.cni)).map(m=>`<option value="${m.cni}">${m.prenom} ${m.nom} — ${m.tel}</option>`).join('');
+}
+
+function saveAdminUrl(){
+  const url=document.getElementById('adminScriptUrl').value.trim();
+  if(!url.startsWith('https://script.google.com')){showToast('❌ URL invalide');return;}
+  localStorage.setItem(K_URL,url); loadMembers(url); showToast('✅ URL enregistrée');
+}
+
+function changeSuperPwd(){
+  const p1=document.getElementById('newSuperPwd1').value, p2=document.getElementById('newSuperPwd2').value;
+  if(!p1||p1.length<6){showToast('❌ Minimum 6 caractères');return;}
+  if(p1!==p2){showToast('❌ Mots de passe différents');return;}
+  localStorage.setItem(K_SUPER_PWD,p1);
+  document.getElementById('newSuperPwd1').value=''; document.getElementById('newSuperPwd2').value='';
+  showToast('✅ Mot de passe super-admin changé !');
+}
+
+function showPage(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.page-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active'); el.classList.add('active');
+  if(page==='admins'){renderAdminsList();populateMemberSelect();}
+}
+function switchFilter(f,el){currentFilter=f;document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderMembers();}
+function toggleDet(id){document.getElementById(id).classList.toggle('open');}
+function openLightbox(src){document.getElementById('lightboxImg').src=src;document.getElementById('lightbox').classList.add('open');}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+window.onload=()=>{if(sessionStorage.getItem(K_SESSION)) showDashboard();};
+</script>
+</body>
+</html>
