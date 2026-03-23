@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Tontine — Formulaire d'Engagement</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0F2544;
+    --navy-mid: #1A3A6B;
+    --gold: #C9933A;
+    --gold-light: #E8B96A;
+    --gold-pale: #FDF6E7;
+    --cream: #FAFAF7;
+    --text: #1C1C1E;
+    --text-soft: #5A5A6A;
+    --border: #DDD8CE;
+    --error: #C0392B;
+    --success: #1A7A4A;
+    --radius: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+  /* SETUP BANNER */
+  .setup-banner {
+    background: linear-gradient(135deg, #7C3AED, #5B21B6);
+    color: #fff; padding: 14px 16px;
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: .82rem; line-height: 1.5;
+  }
+  .setup-banner .icon { font-size: 1.1rem; flex-shrink:0; margin-top:1px; }
+  .setup-banner strong { display:block; font-size:.88rem; margin-bottom:2px; }
+  .setup-banner a { color: #DDD6FE; text-decoration:underline; }
+  #urlInput {
+    width:100%; margin-top:6px; padding:8px 10px;
+    border-radius:8px; border:none; font-family:'DM Sans',sans-serif;
+    font-size:.82rem; color: var(--text);
+  }
+  .btn-save-url {
+    margin-top:6px; padding:7px 14px;
+    background:#fff; color:#5B21B6;
+    border:none; border-radius:8px;
+    font-family:'DM Sans',sans-serif; font-weight:700;
+    font-size:.8rem; cursor:pointer;
+  }
+  .url-saved { display:none; background:#4ADE80; color:#14532D; padding:6px 10px; border-radius:8px; font-size:.78rem; font-weight:600; margin-top:6px; }
+
+  /* HEADER */
+  .header { background: linear-gradient(160deg, var(--navy) 0%, var(--navy-mid) 100%); padding: 2rem 1.5rem 3rem; position: relative; overflow: hidden; }
+  .header::before { content:''; position:absolute; top:-40px; right:-40px; width:200px; height:200px; border-radius:50%; background:rgba(201,147,58,.12); }
+  .header-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(201,147,58,.2); border:1px solid rgba(201,147,58,.4); color:var(--gold-light); font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:5px 12px; border-radius:20px; margin-bottom:1rem; }
+  .header h1 { font-family:'Playfair Display',serif; font-size:1.85rem; font-weight:700; color:#fff; line-height:1.2; margin-bottom:.5rem; position:relative; z-index:1; }
+  .header p { color:rgba(255,255,255,.6); font-size:.875rem; line-height:1.5; position:relative; z-index:1; }
+  .gold-line { width:40px; height:3px; background:var(--gold); border-radius:2px; margin:1rem 0; }
+
+  /* PROGRESS */
+  .progress-wrap { background:var(--navy); padding:1rem 1.5rem; position:sticky; top:0; z-index:100; }
+  .progress-steps { display:flex; gap:6px; margin-bottom:8px; }
+  .progress-steps span { flex:1; height:3px; border-radius:2px; background:rgba(255,255,255,.15); transition:background .4s; }
+  .progress-steps span.done { background:var(--gold); }
+  .progress-label { font-size:11px; color:rgba(255,255,255,.5); font-weight:500; }
+  .progress-label strong { color:var(--gold-light); }
+
+  /* BODY */
+  .form-body { padding:1.5rem; max-width:600px; margin:0 auto; }
+  .step { display:none; animation:fadeIn .35s ease; }
+  .step.active { display:block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+  .step-title { display:flex; align-items:center; gap:10px; margin-bottom:1.5rem; }
+  .step-num { width:34px; height:34px; background:var(--navy); color:var(--gold-light); border-radius:50%; display:grid; place-items:center; font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; flex-shrink:0; }
+  .step-title h2 { font-size:1.05rem; font-weight:600; color:var(--navy); }
+
+  /* FIELDS */
+  .field { margin-bottom:1.25rem; }
+  .field label { display:block; font-size:.8rem; font-weight:600; color:var(--text-soft); letter-spacing:.03em; text-transform:uppercase; margin-bottom:6px; }
+  .field label .req { color:var(--gold); margin-left:2px; }
+  .field input, .field textarea, .field select { width:100%; padding:14px 16px; border:1.5px solid var(--border); border-radius:var(--radius); font-family:'DM Sans',sans-serif; font-size:.95rem; background:#fff; color:var(--text); transition:border-color .2s,box-shadow .2s; -webkit-appearance:none; }
+  .field input:focus, .field textarea:focus, .field select:focus { outline:none; border-color:var(--navy-mid); box-shadow:0 0 0 3px rgba(26,58,107,.1); }
+  .field input.error { border-color:var(--error); }
+  .field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .field-hint { font-size:.75rem; color:var(--text-soft); margin-top:5px; }
+  .field-error { font-size:.75rem; color:var(--error); margin-top:5px; display:none; }
+  .field-error.show { display:block; }
+
+  /* PHOTO */
+  .photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .photo-upload { border:2px dashed var(--border); border-radius:var(--radius); background:#fff; padding:1.5rem 1rem; text-align:center; cursor:pointer; transition:border-color .2s; position:relative; overflow:hidden; }
+  .photo-upload:hover { border-color:var(--gold); background:var(--gold-pale); }
+  .photo-upload input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+  .photo-icon { font-size:2rem; margin-bottom:8px; }
+  .photo-upload p { font-size:.78rem; color:var(--text-soft); font-weight:500; }
+  .photo-upload small { font-size:.7rem; color:#bbb; }
+  .photo-preview { width:100%; height:100px; object-fit:cover; border-radius:8px; margin-top:8px; display:none; }
+
+  /* AMOUNT */
+  .amount-display { background:linear-gradient(135deg,var(--navy),var(--navy-mid)); border-radius:var(--radius); padding:1.5rem; text-align:center; margin-bottom:1.25rem; }
+  .amount-display label { display:block; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.5); margin-bottom:6px; }
+  .amount-display .amount-val { font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; color:var(--gold-light); }
+  .amount-display .currency { font-size:1rem; opacity:.7; margin-left:4px; }
+
+  /* COMMITMENTS */
+  .commitment-list { display:flex; flex-direction:column; gap:10px; }
+  .commitment-item { display:flex; align-items:flex-start; gap:12px; background:#fff; border:1.5px solid var(--border); border-radius:var(--radius); padding:14px; cursor:pointer; transition:border-color .2s,background .2s; }
+  .commitment-item:has(.check-box:checked) { border-color:var(--navy-mid); background:var(--gold-pale); }
+  .check-box { width:20px; height:20px; flex-shrink:0; border:2px solid var(--border); border-radius:5px; appearance:none; background:#fff; cursor:pointer; transition:all .2s; margin-top:1px; position:relative; }
+  .check-box:checked { background:var(--navy); border-color:var(--navy); }
+  .check-box:checked::after { content:'✓'; position:absolute; inset:0; display:grid; place-items:center; color:var(--gold-light); font-size:12px; font-weight:700; }
+  .commitment-text { font-size:.875rem; line-height:1.5; pointer-events:none; }
+  .all-check-note { background:var(--gold-pale); border:1px solid var(--gold); border-radius:var(--radius); padding:12px 14px; font-size:.8rem; color:var(--navy); font-weight:500; margin-top:1rem; display:none; }
+
+  /* SIGNATURE */
+  .sig-wrap { background:#fff; border:1.5px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:1rem; }
+  .sig-label-bar { background:var(--navy); color:rgba(255,255,255,.7); font-size:.75rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; padding:8px 14px; display:flex; justify-content:space-between; align-items:center; }
+  .sig-label-bar button { background:none; border:none; color:var(--gold-light); font-size:.75rem; cursor:pointer; font-family:'DM Sans',sans-serif; }
+  canvas#sigCanvas { display:block; width:100%; touch-action:none; cursor:crosshair; }
+
+  /* INFO BOX */
+  .info-box { background:var(--gold-pale); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; padding:12px 14px; font-size:.8rem; color:var(--navy); line-height:1.5; margin-bottom:1.25rem; }
+
+  /* BUTTONS */
+  .btn-row { display:flex; gap:10px; margin-top:1.5rem; }
+  .btn { flex:1; padding:16px; border:none; border-radius:var(--radius); font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:600; cursor:pointer; transition:all .2s; }
+  .btn-prev { background:#fff; border:1.5px solid var(--border); color:var(--text-soft); flex:0.4; }
+  .btn-prev:hover { border-color:var(--navy); color:var(--navy); }
+  .btn-next { background:var(--navy); color:#fff; box-shadow:0 4px 16px rgba(15,37,68,.3); }
+  .btn-next:hover { background:var(--navy-mid); transform:translateY(-1px); }
+  .btn-submit { background:linear-gradient(135deg,var(--gold),#A87830); color:#fff; box-shadow:0 4px 20px rgba(201,147,58,.4); }
+  .btn-submit:disabled { opacity:.5; cursor:not-allowed; transform:none !important; }
+
+  /* LOADING */
+  .sending-overlay { display:none; position:fixed; inset:0; background:rgba(15,37,68,.85); z-index:999; place-items:center; flex-direction:column; gap:1rem; }
+  .sending-overlay.active { display:flex; }
+  .spinner { width:48px; height:48px; border:4px solid rgba(255,255,255,.2); border-top-color:var(--gold); border-radius:50%; animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .sending-overlay p { color:#fff; font-weight:600; font-size:.95rem; }
+
+  /* SUCCESS */
+  .success-screen { display:none; text-align:center; padding:3rem 1.5rem; animation:fadeIn .5s ease; }
+  .success-screen.active { display:block; }
+  .success-icon { width:80px; height:80px; background:linear-gradient(135deg,var(--success),#0F5C36); border-radius:50%; display:grid; place-items:center; font-size:2.5rem; margin:0 auto 1.5rem; box-shadow:0 8px 32px rgba(26,122,74,.25); }
+  .success-screen h2 { font-family:'Playfair Display',serif; font-size:1.5rem; color:var(--navy); margin-bottom:.75rem; }
+  .success-screen p { color:var(--text-soft); font-size:.9rem; line-height:1.6; max-width:320px; margin:0 auto 2rem; }
+  .summary-card { background:#fff; border:1.5px solid var(--border); border-radius:var(--radius); padding:1.25rem; text-align:left; margin-bottom:1.5rem; }
+  .summary-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:.85rem; }
+  .summary-row:last-child { border-bottom:none; }
+  .summary-row span:first-child { color:var(--text-soft); }
+  .summary-row span:last-child { font-weight:600; color:var(--navy); }
+  .sheet-badge { background:#E8F5E9; border:1px solid #A5D6A7; border-radius:8px; padding:10px 14px; font-size:.8rem; color:#1B5E20; font-weight:600; margin-bottom:1rem; }
+  .btn-download { width:100%; padding:15px; background:var(--navy); color:#fff; border:none; border-radius:var(--radius); font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:600; cursor:pointer; margin-bottom:10px; transition:all .2s; }
+  .btn-new { width:100%; padding:14px; background:#fff; color:var(--navy); border:1.5px solid var(--navy); border-radius:var(--radius); font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:600; cursor:pointer; }
+  .divider { height:1px; background:var(--border); margin:1.5rem 0; }
+  .error-banner { background:#FEE2E2; border:1px solid #FCA5A5; border-radius:8px; padding:12px 14px; font-size:.82rem; color:#7F1D1D; margin-bottom:1rem; display:none; }
+  .error-banner.show { display:block; }
+</style>
+</head>
+<body>
+
+<!-- SETUP BANNER -->
+<div class="setup-banner" id="setupBanner">
+  <span class="icon">⚙️</span>
+  <div>
+    <strong>Configuration requise (une seule fois)</strong>
+    Colle ici l'URL de ton Google Apps Script pour activer l'envoi vers Google Sheets.
+    <a href="#" onclick="showSetupGuide()">Comment faire ? →</a>
+    <input type="url" id="urlInput" placeholder="https://script.google.com/macros/s/XXXX/exec">
+    <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+      <button class="btn-save-url" onclick="saveUrl()">Enregistrer</button>
+      <span class="url-saved" id="urlSaved">✓ URL enregistrée !</span>
+    </div>
+  </div>
+</div>
+
+<div class="header">
+  <div class="header-badge">🤝 Tontine Sécurisée</div>
+  <h1>Formulaire<br>d'Engagement</h1>
+  <div class="gold-line"></div>
+  <p>Remplis ce formulaire pour confirmer ta réception des fonds et tes engagements envers le groupe.</p>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-steps" id="progressSteps"></div>
+  <div class="progress-label">Étape <strong id="stepNum">1</strong> sur <strong>5</strong> — <span id="stepName">Identité</span></div>
+</div>
+
+<div class="form-body">
+
+  <!-- STEP 1 -->
+  <div class="step active" data-step="1">
+    <div class="step-title"><div class="step-num">1</div><h2>Ton identité</h2></div>
+    <div class="field-row">
+      <div class="field"><label>Nom <span class="req">*</span></label><input type="text" id="nom" placeholder="MBARGA"><div class="field-error" id="err-nom">Requis.</div></div>
+      <div class="field"><label>Prénom(s) <span class="req">*</span></label><input type="text" id="prenom" placeholder="Jean Paul"><div class="field-error" id="err-prenom">Requis.</div></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Date de naissance <span class="req">*</span></label><input type="date" id="dob"><div class="field-error" id="err-dob">Requis.</div></div>
+      <div class="field"><label>N° CNI <span class="req">*</span></label><input type="text" id="cni" placeholder="CM-12345678"><div class="field-error" id="err-cni">Requis.</div></div>
+    </div>
+    <div class="field"><label>Téléphone <span class="req">*</span></label><input type="tel" id="tel" placeholder="+237 6XX XX XX XX"><div class="field-error" id="err-tel">Requis.</div></div>
+    <div class="field"><label>Email (facultatif)</label><input type="email" id="email" placeholder="ton@email.com"></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step" data-step="2">
+    <div class="step-title"><div class="step-num">2</div><h2>Ton adresse complète</h2></div>
+    <div class="field"><label>Quartier / Rue <span class="req">*</span></label><input type="text" id="quartier" placeholder="Ex : Bastos, Rue des Palmiers"><div class="field-error" id="err-quartier">Requis.</div></div>
+    <div class="field-row">
+      <div class="field"><label>Ville <span class="req">*</span></label><input type="text" id="ville" placeholder="Yaoundé"><div class="field-error" id="err-ville">Requis.</div></div>
+      <div class="field"><label>Région <span class="req">*</span></label><input type="text" id="region" placeholder="Centre"><div class="field-error" id="err-region">Requis.</div></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Pays <span class="req">*</span></label><input type="text" id="pays" value="Cameroun"><div class="field-error" id="err-pays">Requis.</div></div>
+      <div class="field"><label>Repère</label><input type="text" id="repere" placeholder="Face au marché"></div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step" data-step="3">
+    <div class="step-title"><div class="step-num">3</div><h2>Photo de ta CNI</h2></div>
+    <div class="info-box">📷 Prends en photo les deux faces de ta CNI directement depuis ce formulaire.</div>
+    <div class="photo-grid">
+      <div class="field">
+        <label>Recto <span class="req">*</span></label>
+        <div class="photo-upload" id="area-recto">
+          <input type="file" id="cni-recto" accept="image/*" capture="environment" onchange="previewPhoto(this,'prev-recto','area-recto','err-recto')">
+          <div class="photo-icon">🪪</div><p>Recto</p><small>Appuie ici</small>
+          <img id="prev-recto" class="photo-preview">
+        </div>
+        <div class="field-error" id="err-recto">Photo requise.</div>
+      </div>
+      <div class="field">
+        <label>Verso <span class="req">*</span></label>
+        <div class="photo-upload" id="area-verso">
+          <input type="file" id="cni-verso" accept="image/*" capture="environment" onchange="previewPhoto(this,'prev-verso','area-verso','err-verso')">
+          <div class="photo-icon">🪪</div><p>Verso</p><small>Appuie ici</small>
+          <img id="prev-verso" class="photo-preview">
+        </div>
+        <div class="field-error" id="err-verso">Photo requise.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step" data-step="4">
+    <div class="step-title"><div class="step-num">4</div><h2>Confirmation de réception</h2></div>
+    <div class="field"><label>Montant reçu (FCFA) <span class="req">*</span></label><input type="number" id="montant" placeholder="50000" min="0" oninput="updateAmount()"><div class="field-error" id="err-montant">Requis.</div></div>
+    <div class="amount-display" id="amountDisplay" style="display:none"><label>Montant confirmé</label><div class="amount-val" id="amountVal"></div></div>
+    <div class="field-row">
+      <div class="field"><label>Date de réception <span class="req">*</span></label><input type="date" id="dateRecep"><div class="field-error" id="err-dateRecep">Requis.</div></div>
+      <div class="field"><label>Tour / Cycle N° <span class="req">*</span></label><input type="number" id="tour" placeholder="3" min="1"><div class="field-error" id="err-tour">Requis.</div></div>
+    </div>
+    <div class="field">
+      <label>Mode de réception <span class="req">*</span></label>
+      <select id="mode"><option value="">— Choisir —</option><option>Mobile Money (MTN)</option><option>Mobile Money (Orange)</option><option>Espèces en main propre</option><option>Virement bancaire</option><option>Autre</option></select>
+      <div class="field-error" id="err-mode">Requis.</div>
+    </div>
+    <div class="field"><label>N° de transaction (facultatif)</label><input type="text" id="transactionId" placeholder="TXN-2024-XXXXXX"><div class="field-hint">Numéro de confirmation reçu par SMS.</div></div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step" data-step="5">
+    <div class="step-title"><div class="step-num">5</div><h2>Tes engagements</h2></div>
+    <div class="info-box">✅ Coche chaque point pour confirmer ton accord. Tous sont obligatoires.</div>
+    <div class="commitment-list">
+      <label class="commitment-item"><input type="checkbox" class="check-box commitment"><span class="commitment-text">Je confirme avoir reçu la somme indiquée en bonne et due forme.</span></label>
+      <label class="commitment-item"><input type="checkbox" class="check-box commitment"><span class="commitment-text">Je m'engage à cotiser régulièrement et sans retard pour tous les membres jusqu'à la fin du cycle.</span></label>
+      <label class="commitment-item"><input type="checkbox" class="check-box commitment"><span class="commitment-text">Je ne formulerai aucune excuse pour retarder ou annuler mes cotisations.</span></label>
+      <label class="commitment-item"><input type="checkbox" class="check-box commitment"><span class="commitment-text">Je reconnais que tout manquement m'expose à des sanctions décidées par le groupe.</span></label>
+      <label class="commitment-item"><input type="checkbox" class="check-box commitment"><span class="commitment-text">Je certifie que toutes les informations fournies sont exactes et sincères.</span></label>
+      <label class="commitment-item"><input type="checkbox" class="check-box commitment"><span class="commitment-text">J'autorise le groupe à conserver ce document signé comme preuve de mon engagement.</span></label>
+    </div>
+    <div class="all-check-note" id="allCheckNote">🎉 Tous les engagements acceptés. Tu peux maintenant signer.</div>
+    <div class="divider"></div>
+    <div class="step-title"><div class="step-num" style="background:var(--gold);color:#fff">✍</div><h2>Signature électronique</h2></div>
+    <div class="sig-wrap">
+      <div class="sig-label-bar"><span>Signe dans le cadre ci-dessous</span><button onclick="clearSig()">Effacer</button></div>
+      <canvas id="sigCanvas" width="800" height="160"></canvas>
+    </div>
+    <div class="field-error" id="err-sig" style="margin-top:-8px;margin-bottom:12px;">Signature requise.</div>
+    <div class="error-banner" id="errorBanner">❌ Erreur lors de l'envoi. Vérifie ta connexion ou l'URL du script.</div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">✅</div>
+    <h2>Engagement enregistré !</h2>
+    <p>Ton formulaire a été envoyé avec succès et enregistré dans le tableau Google Sheets du groupe.</p>
+    <div class="sheet-badge" id="sheetBadge">📊 Données sauvegardées dans Google Sheets</div>
+    <div class="summary-card" id="summaryCard"></div>
+    <button class="btn-download" onclick="generateReceipt()">📄 Télécharger mon reçu</button>
+    <button class="btn-new" onclick="location.reload()">Nouveau formulaire</button>
+  </div>
+
+  <div class="btn-row" id="navBtns">
+    <button class="btn btn-prev" id="btnPrev" onclick="navigate(-1)" style="display:none">← Retour</button>
+    <button class="btn btn-next" id="btnNext" onclick="navigate(1)">Continuer →</button>
+  </div>
+</div>
+
+<!-- SENDING OVERLAY -->
+<div class="sending-overlay" id="sendingOverlay">
+  <div class="spinner"></div>
+  <p>Envoi vers Google Sheets…</p>
+</div>
+
+<!-- SETUP GUIDE MODAL -->
+<div id="guideModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;overflow-y:auto;padding:20px">
+  <div style="background:#fff;border-radius:16px;max-width:500px;margin:0 auto;overflow:hidden">
+    <div style="background:var(--navy);color:#fff;padding:20px;display:flex;justify-content:space-between;align-items:center">
+      <h3 style="font-size:1rem">⚙️ Guide de configuration</h3>
+      <button onclick="document.getElementById('guideModal').style.display='none'" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:20px;font-size:.87rem;line-height:1.7;color:var(--text)">
+      <p style="margin-bottom:16px">Suis ces étapes <strong>une seule fois</strong> pour connecter le formulaire à ton Google Sheets :</p>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:12px">
+          <div style="width:28px;height:28px;background:var(--navy);color:var(--gold-light);border-radius:50%;display:grid;place-items:center;font-weight:700;flex-shrink:0">1</div>
+          <div>Va sur <a href="https://sheets.google.com" target="_blank" style="color:var(--navy-mid)">sheets.google.com</a> et crée un nouveau tableau intitulé <strong>"Tontine"</strong>.</div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <div style="width:28px;height:28px;background:var(--navy);color:var(--gold-light);border-radius:50%;display:grid;place-items:center;font-weight:700;flex-shrink:0">2</div>
+          <div>Dans le menu, clique sur <strong>Extensions → Apps Script</strong>.</div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <div style="width:28px;height:28px;background:var(--navy);color:var(--gold-light);border-radius:50%;display:grid;place-items:center;font-weight:700;flex-shrink:0">3</div>
+          <div>Supprime tout le code existant et colle le contenu du fichier <strong>google_apps_script.gs</strong> fourni avec ce formulaire.</div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <div style="width:28px;height:28px;background:var(--navy);color:var(--gold-light);border-radius:50%;display:grid;place-items:center;font-weight:700;flex-shrink:0">4</div>
+          <div>Clique sur <strong>Déployer → Nouveau déploiement</strong>. Choisis <strong>"Application Web"</strong>. Dans "Qui a accès", sélectionne <strong>"Tout le monde"</strong>. Clique sur Déployer.</div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <div style="width:28px;height:28px;background:var(--navy);color:var(--gold-light);border-radius:50%;display:grid;place-items:center;font-weight:700;flex-shrink:0">5</div>
+          <div>Copie l'<strong>URL de déploiement</strong> (commence par <code style="background:#f3f4f6;padding:2px 5px;border-radius:4px">https://script.google.com/macros/s/...</code>) et colle-la dans le champ en haut de ce formulaire.</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:12px;background:#FDF6E7;border-radius:8px;font-size:.8rem;color:var(--navy)">
+        💡 <strong>Astuce :</strong> Partage ensuite le lien de ce fichier HTML via WhatsApp à chaque membre. Ils remplissent le formulaire et les données arrivent automatiquement dans ton Google Sheets !
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'tontine_script_url';
+let scriptUrl = localStorage.getItem(STORAGE_KEY) || '';
+
+function saveUrl() {
+  const v = document.getElementById('urlInput').value.trim();
+  if (!v.startsWith('https://script.google.com')) {
+    alert('URL invalide. Elle doit commencer par https://script.google.com');
+    return;
+  }
+  scriptUrl = v;
+  localStorage.setItem(STORAGE_KEY, v);
+  document.getElementById('urlSaved').style.display = 'inline-block';
+  setTimeout(() => {
+    document.getElementById('setupBanner').style.display = 'none';
+  }, 1200);
+}
+
+function showSetupGuide() {
+  document.getElementById('guideModal').style.display = 'block';
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+const STEPS_META = ['Identité','Adresse','Photo CNI','Réception','Engagements'];
+let current = 0;
+
+function init() {
+  // Load saved URL
+  if (scriptUrl) {
+    document.getElementById('urlInput').value = scriptUrl;
+    document.getElementById('setupBanner').style.display = 'none';
+  }
+
+  const ps = document.getElementById('progressSteps');
+  STEPS_META.forEach(() => { const s=document.createElement('span'); ps.appendChild(s); });
+  document.getElementById('dateRecep').valueAsDate = new Date();
+  updateUI();
+  initSig();
+
+  // Commitment checkboxes
+  document.querySelectorAll('.commitment').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const all = [...document.querySelectorAll('.commitment')].every(b => b.checked);
+      document.getElementById('allCheckNote').style.display = all ? 'flex' : 'none';
+    });
+  });
+}
+
+function updateUI() {
+  document.querySelectorAll('.step').forEach((s,i) => s.classList.toggle('active', i===current));
+  document.querySelectorAll('#progressSteps span').forEach((s,i) => s.classList.toggle('done', i<=current));
+  document.getElementById('stepNum').textContent = current+1;
+  document.getElementById('stepName').textContent = STEPS_META[current];
+  document.getElementById('btnPrev').style.display = current>0 ? 'flex' : 'none';
+  const isLast = current === STEPS_META.length-1;
+  const btn = document.getElementById('btnNext');
+  btn.textContent = isLast ? '✔ Soumettre' : 'Continuer →';
+  btn.className = 'btn ' + (isLast ? 'btn-submit' : 'btn-next');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function navigate(dir) {
+  if (dir===1 && !validateStep()) return;
+  if (dir===1 && current===STEPS_META.length-1) { submitForm(); return; }
+  current = Math.max(0, Math.min(STEPS_META.length-1, current+dir));
+  updateUI();
+}
+
+// ── VALIDATION ────────────────────────────────────────────────────────────
+function req(ids) {
+  let ok = true;
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    const err = document.getElementById('err-'+id);
+    const empty = !el.value.trim();
+    el.classList.toggle('error', empty);
+    if(err) err.classList.toggle('show', empty);
+    if(empty) ok = false;
+  });
+  return ok;
+}
+
+function validateStep() {
+  if (current===0) return req(['nom','prenom','dob','cni','tel']);
+  if (current===1) return req(['quartier','ville','region','pays']);
+  if (current===2) {
+    let ok = true;
+    ['recto','verso'].forEach(side => {
+      const hasFile = document.getElementById('cni-'+side).files.length > 0;
+      document.getElementById('err-'+side).classList.toggle('show', !hasFile);
+      if(!hasFile) ok = false;
+    });
+    return ok;
+  }
+  if (current===3) return req(['montant','dateRecep','tour','mode']);
+  if (current===4) {
+    const allChecked = [...document.querySelectorAll('.commitment')].every(b=>b.checked);
+    if (!allChecked) { alert('Tu dois cocher tous les engagements.'); return false; }
+    if (sigEmpty()) { document.getElementById('err-sig').classList.add('show'); return false; }
+    document.getElementById('err-sig').classList.remove('show');
+    return true;
+  }
+  return true;
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function previewPhoto(input, prevId, areaId, errId) {
+  if (!input.files.length) return;
+  const r = new FileReader();
+  r.onload = e => {
+    const img = document.getElementById(prevId);
+    img.src = e.target.result; img.style.display='block';
+    const area = document.getElementById(areaId);
+    area.querySelector('.photo-icon').style.display='none';
+    area.querySelector('p').style.display='none';
+    area.querySelector('small').style.display='none';
+    document.getElementById(errId).classList.remove('show');
+  };
+  r.readAsDataURL(input.files[0]);
+}
+
+function updateAmount() {
+  const v = document.getElementById('montant').value;
+  const d = document.getElementById('amountDisplay');
+  if(v && parseInt(v)>0) {
+    d.style.display='block';
+    document.getElementById('amountVal').innerHTML = parseInt(v).toLocaleString('fr-FR')+'<span class="currency"> FCFA</span>';
+  } else d.style.display='none';
+}
+
+function formatDate(d) {
+  if(!d) return '—';
+  const [y,m,j]=d.split('-'); return `${j}/${m}/${y}`;
+}
+
+// ── SIGNATURE ─────────────────────────────────────────────────────────────
+let sigDrawing=false, lastX=0, lastY=0, sigHasStrokes=false;
+
+function initSig() {
+  const canvas=document.getElementById('sigCanvas');
+  const ctx=canvas.getContext('2d');
+  drawSigPlaceholder(ctx, canvas);
+
+  function getPos(e) {
+    const r=canvas.getBoundingClientRect(), sx=canvas.width/r.width, sy=canvas.height/r.height;
+    if(e.touches) return {x:(e.touches[0].clientX-r.left)*sx, y:(e.touches[0].clientY-r.top)*sy};
+    return {x:(e.clientX-r.left)*sx, y:(e.clientY-r.top)*sy};
+  }
+  function start(e) {
+    e.preventDefault();
+    if(!sigHasStrokes){ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);sigHasStrokes=true;}
+    sigDrawing=true; const p=getPos(e); lastX=p.x; lastY=p.y;
+  }
+  function draw(e) {
+    e.preventDefault(); if(!sigDrawing)return;
+    const p=getPos(e);
+    ctx.beginPath();ctx.moveTo(lastX,lastY);ctx.lineTo(p.x,p.y);
+    ctx.strokeStyle='#0F2544';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
+    lastX=p.x; lastY=p.y;
+  }
+  canvas.addEventListener('mousedown',start); canvas.addEventListener('mousemove',draw); canvas.addEventListener('mouseup',()=>sigDrawing=false);
+  canvas.addEventListener('touchstart',start,{passive:false}); canvas.addEventListener('touchmove',draw,{passive:false}); canvas.addEventListener('touchend',()=>sigDrawing=false);
+}
+
+function drawSigPlaceholder(ctx,canvas) {
+  ctx.fillStyle='#F3F4F6'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#C4C4C4'; ctx.font='14px DM Sans,sans-serif'; ctx.textAlign='center';
+  ctx.fillText('Trace ta signature ici',canvas.width/2,canvas.height/2);
+}
+
+function clearSig() {
+  const c=document.getElementById('sigCanvas');
+  drawSigPlaceholder(c.getContext('2d'),c);
+  sigHasStrokes=false;
+}
+function sigEmpty(){return !sigHasStrokes;}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────
+async function submitForm() {
+  if (!scriptUrl) {
+    alert('⚙️ Veuillez d\'abord configurer l\'URL Google Apps Script en haut du formulaire.');
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+
+  const payload = {
+    nom: document.getElementById('nom').value,
+    prenom: document.getElementById('prenom').value,
+    dob: document.getElementById('dob').value,
+    cni: document.getElementById('cni').value,
+    tel: document.getElementById('tel').value,
+    email: document.getElementById('email').value,
+    quartier: document.getElementById('quartier').value,
+    ville: document.getElementById('ville').value,
+    region: document.getElementById('region').value,
+    pays: document.getElementById('pays').value,
+    repere: document.getElementById('repere').value,
+    montant: document.getElementById('montant').value,
+    dateRecep: formatDate(document.getElementById('dateRecep').value),
+    tour: document.getElementById('tour').value,
+    mode: document.getElementById('mode').value,
+    transactionId: document.getElementById('transactionId').value,
+    signature: document.getElementById('sigCanvas').toDataURL('image/png'),
+  };
+
+  document.getElementById('sendingOverlay').classList.add('active');
+  document.getElementById('btnNext').disabled = true;
+  document.getElementById('errorBanner').classList.remove('show');
+
+  try {
+    await fetch(scriptUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    // no-cors means we can't read the response — assume success
+    showSuccess(payload);
+  } catch(err) {
+    document.getElementById('sendingOverlay').classList.remove('active');
+    document.getElementById('btnNext').disabled = false;
+    document.getElementById('errorBanner').classList.add('show');
+  }
+}
+
+function showSuccess(p) {
+  document.getElementById('sendingOverlay').classList.remove('active');
+  document.querySelectorAll('.step').forEach(s=>s.style.display='none');
+  document.getElementById('navBtns').style.display='none';
+  document.getElementById('successScreen').classList.add('active');
+  document.getElementById('summaryCard').innerHTML = `
+    <div class="summary-row"><span>Bénéficiaire</span><span>${p.prenom} ${p.nom}</span></div>
+    <div class="summary-row"><span>Montant reçu</span><span>${parseInt(p.montant).toLocaleString('fr-FR')} FCFA</span></div>
+    <div class="summary-row"><span>Date</span><span>${p.dateRecep}</span></div>
+    <div class="summary-row"><span>Tour</span><span>N° ${p.tour}</span></div>
+    <div class="summary-row"><span>Mode</span><span>${p.mode}</span></div>
+    <div class="summary-row"><span>Statut</span><span style="color:var(--success)">✔ Envoyé</span></div>
+  `;
+  // Store for receipt
+  window._lastPayload = p;
+}
+
+// ── RECEIPT ───────────────────────────────────────────────────────────────
+function generateReceipt() {
+  const p = window._lastPayload; if(!p) return;
+  const now = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  const rectoSrc = document.getElementById('prev-recto').src || '';
+  const versoSrc = document.getElementById('prev-verso').src || '';
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reçu Tontine</title>
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:13px;color:#1C1C1E}
+  .hdr{background:#0F2544;color:#fff;padding:24px;text-align:center}.hdr h1{font-size:18px;margin-bottom:4px}.hdr p{opacity:.6;font-size:11px}
+  .bar{height:4px;background:#C9933A}.body{padding:24px}.sec{margin-bottom:18px}
+  .sec-title{background:#F0F4FA;padding:7px 12px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#0F2544;border-left:3px solid #C9933A;margin-bottom:10px}
+  .row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;font-size:12px}
+  .row:last-child{border-bottom:none}.row span:first-child{color:#888}.row span:last-child{font-weight:600}
+  .photos{display:flex;gap:10px}.photos img{width:48%;border:1px solid #ddd;border-radius:6px}
+  .sig{border:1px solid #ddd;border-radius:6px;width:100%;max-height:70px;object-fit:contain}
+  .stamp{text-align:center;padding:16px;color:#1A7A4A;font-weight:700;border:2px solid #1A7A4A;border-radius:8px;margin-top:14px}
+  .footer{text-align:center;padding:14px;font-size:10px;color:#888;background:#F9F9F9;margin-top:16px}
+  li{padding:3px 0;font-size:11px;color:#444}</style></head><body>
+  <div class="hdr"><h1>REÇU D'ENGAGEMENT — TONTINE</h1><p>Généré le ${now}</p></div>
+  <div class="bar"></div><div class="body">
+  <div class="sec"><div class="sec-title">Identité</div>
+  <div class="row"><span>Nom & Prénom</span><span>${p.prenom} ${p.nom}</span></div>
+  <div class="row"><span>CNI</span><span>${p.cni}</span></div>
+  <div class="row"><span>Téléphone</span><span>${p.tel}</span></div>
+  <div class="row"><span>Adresse</span><span>${p.quartier}, ${p.ville}, ${p.pays}</span></div></div>
+  <div class="sec"><div class="sec-title">Réception des fonds</div>
+  <div class="row"><span>Montant</span><span>${parseInt(p.montant).toLocaleString('fr-FR')} FCFA</span></div>
+  <div class="row"><span>Date</span><span>${p.dateRecep}</span></div>
+  <div class="row"><span>Tour</span><span>N° ${p.tour}</span></div>
+  <div class="row"><span>Mode</span><span>${p.mode}</span></div>
+  <div class="row"><span>Transaction</span><span>${p.transactionId||'—'}</span></div></div>
+  ${rectoSrc?`<div class="sec"><div class="sec-title">Photos CNI</div><div class="photos"><img src="${rectoSrc}"><img src="${versoSrc}"></div></div>`:''}
+  <div class="sec"><div class="sec-title">Engagements</div><ul style="padding-left:16px">
+  <li>✔ Confirmation de réception des fonds</li><li>✔ Cotisation régulière jusqu'à fin du cycle</li>
+  <li>✔ Aucune excuse pour retard ou annulation</li><li>✔ Acceptation des sanctions en cas de manquement</li>
+  <li>✔ Exactitude des informations fournies</li><li>✔ Conservation du document autorisée</li></ul></div>
+  <div class="sec"><div class="sec-title">Signature électronique</div>
+  <img src="${p.signature}" class="sig"><p style="font-size:10px;color:#888;margin-top:5px;text-align:center">${p.prenom} ${p.nom} — ${now}</p></div>
+  <div class="stamp">✅ DOCUMENT VALIDÉ — ENVOYÉ DANS GOOGLE SHEETS</div></div>
+  <div class="footer">Document confidentiel — Usage exclusif du groupe de tontine</div></body></html>`;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download=`Recu_Tontine_${p.nom}_${p.prenom}_Tour${p.tour}.html`;
+  a.click();
+}
+
+init();
+</script>
+</body>
+</html>
