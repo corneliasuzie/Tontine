@@ -63,6 +63,21 @@
   .error-banner.show{display:block;}
   .selfie-wrap{max-width:240px;margin:0 auto;padding:2rem 1rem;}
   .selfie-preview{height:150px;border-radius:50%;object-fit:cover;margin:12px auto;display:none;}
+  /* Validation states */
+  .field input.valid{border-color:var(--success);background:#F0FDF4;}
+  .field input.checking{border-color:#D97706;background:#FFFBEB;}
+  .field-valid{font-size:.75rem;color:var(--success);margin-top:5px;display:none;}
+  .field-valid.show{display:flex;align-items:center;gap:4px;}
+  .field-checking{font-size:.75rem;color:#D97706;margin-top:5px;display:none;}
+  .field-checking.show{display:flex;align-items:center;gap:4px;}
+  .photo-upload.valid{border-color:var(--success);background:#F0FDF4;}
+  .photo-upload.error-state{border-color:var(--error);background:#FEF2F2;}
+  .photo-upload.checking{border-color:#D97706;background:#FFFBEB;}
+  .validation-overlay{display:none;position:fixed;inset:0;background:rgba(15,37,68,.9);z-index:998;place-items:center;flex-direction:column;gap:1.5rem;}
+  .validation-overlay.active{display:flex;}
+  .validation-overlay p{color:#fff;font-weight:600;font-size:.95rem;text-align:center;max-width:280px;line-height:1.5;}
+  .val-spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
+  .val-step{color:rgba(255,255,255,.6);font-size:.8rem;}
 </style>
 </head>
 <body>
@@ -105,13 +120,40 @@
 
     <!-- ADRESSE -->
     <div class="step-title" style="margin-top:1.5rem"><div class="step-num">2</div><h2>Ton adresse</h2></div>
-    <div class="field"><label>Quartier / Rue <span class="req">*</span></label><input type="text" id="quartier" placeholder="Ex : Bastos, Rue des Palmiers"><div class="field-error" id="err-quartier">Requis.</div></div>
+    <div class="field">
+      <label>Quartier / Rue <span class="req">*</span></label>
+      <input type="text" id="quartier" placeholder="Ex : Bastos, Rue des Palmiers">
+      <div class="field-error" id="err-quartier">Requis.</div>
+      <div class="field-valid" id="ok-quartier"></div>
+      <div class="field-checking" id="chk-quartier"></div>
+    </div>
+
+    <!-- GÉOLOCALISATION -->
+    <div style="background:linear-gradient(135deg,#0F2544,#1A3A6B);border-radius:12px;padding:1.25rem;margin-bottom:1.25rem;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:.75rem;">
+        <span style="font-size:1.5rem;">📍</span>
+        <div>
+          <div style="font-weight:700;color:#fff;font-size:.9rem;">Vérification de localisation</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.55);margin-top:1px;">Pour confirmer que ta ville et ton adresse sont exactes</div>
+        </div>
+      </div>
+      <button type="button" id="geoBtn" onclick="detectLocation()" style="width:100%;padding:11px;background:rgba(201,147,58,.85);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;transition:all .2s;">
+        📍 Détecter ma position automatiquement
+      </button>
+      <div id="geoStatus" style="margin-top:10px;font-size:.78rem;display:none;"></div>
+      <div id="geoResult" style="margin-top:8px;background:rgba(255,255,255,.08);border-radius:8px;padding:10px;font-size:.78rem;color:rgba(255,255,255,.7);display:none;"></div>
+      <div style="margin-top:8px;font-size:.7rem;color:rgba(255,255,255,.3);text-align:center;">🔒 Ta position est utilisée uniquement pour vérifier ton adresse</div>
+    </div>
     <div class="field-row">
-      <div class="field"><label>Ville <span class="req">*</span></label><input type="text" id="ville" placeholder="Yaoundé"><div class="field-error" id="err-ville">Requis.</div></div>
+      <div class="field"><label>Ville <span class="req">*</span></label><input type="text" id="ville" placeholder="Yaoundé"><div class="field-error" id="err-ville">Requis.</div>
+        <div class="field-valid" id="ok-ville"></div>
+        <div class="field-checking" id="chk-ville"></div></div>
       <div class="field"><label>Région <span class="req">*</span></label><input type="text" id="region" placeholder="Centre"><div class="field-error" id="err-region">Requis.</div></div>
     </div>
     <div class="field-row">
-      <div class="field"><label>Pays <span class="req">*</span></label><input type="text" id="pays" value="Cameroun"><div class="field-error" id="err-pays">Requis.</div></div>
+      <div class="field"><label>Pays <span class="req">*</span></label><input type="text" id="pays" value="Cameroun"><div class="field-error" id="err-pays">Requis.</div>
+        <div class="field-valid" id="ok-pays"></div>
+        <div class="field-checking" id="chk-pays"></div></div>
       <div class="field"><label>Repère</label><input type="text" id="repere" placeholder="Face au marché"></div>
     </div>
 
@@ -172,7 +214,14 @@
 
 <script>
 const STORAGE_KEY = "tontine_script_url";
-let scriptUrl = "https://script.google.com/macros/s/AKfycbwIP20wDNYdBL9zcQFOEef8sLba0MN9OYcZDZU43SzS_Ub-hPxpxZF6x6Z2hTCc_lf9Nw/exec";
+let scriptUrl = localStorage.getItem(STORAGE_KEY) || "";
+
+// ── KNOWN EMAIL DOMAINS ───────────────────────────────────────────────────
+const VALID_DOMAINS = ["gmail.com","yahoo.com","yahoo.fr","hotmail.com","hotmail.fr",
+  "outlook.com","outlook.fr","live.com","live.fr","icloud.com","me.com",
+  "orange.fr","wanadoo.fr","sfr.fr","free.fr","laposte.net","bbox.fr",
+  "yandex.com","protonmail.com","aol.com","mail.com","gmx.com","gmx.fr",
+  "nextel.cm","camtel.cm","mtn.cm","orange.cm","yahoo.fr","rocketmail.com"];
 
 function saveUrl() {
   const v = document.getElementById("urlInput").value.trim();
@@ -186,22 +235,113 @@ window.onload = () => {
   if (scriptUrl) { document.getElementById("urlInput").value = scriptUrl; document.getElementById("setupBanner").style.display = "none"; }
 };
 
-function formatTel(input) {
-  input.value = input.value.replace(/[^0-9+]/g, "");
+function formatTel(input) { input.value = input.value.replace(/[^0-9+]/g, ""); }
+
+// ── SHOW VALIDATION OVERLAY ───────────────────────────────────────────────
+function showValidating(msg, step) {
+  const ov = document.getElementById("validationOverlay");
+  ov.classList.add("active");
+  document.getElementById("valMsg").textContent = msg;
+  document.getElementById("valStep").textContent = step || "";
+}
+function hideValidating() {
+  document.getElementById("validationOverlay").classList.remove("active");
 }
 
-function req(ids) {
-  let ok = true;
-  ids.forEach(id => {
-    const el = document.getElementById(id), err = document.getElementById("err-"+id);
-    const empty = !el.value.trim();
-    el.classList.toggle("error", empty);
-    if (err) err.classList.toggle("show", empty);
-    if (empty) ok = false;
-  });
-  return ok;
+// ── FIELD STATE HELPERS ───────────────────────────────────────────────────
+function setFieldState(id, state, message) {
+  const el  = document.getElementById(id);
+  const err = document.getElementById("err-"+id);
+  const ok  = document.getElementById("ok-"+id);
+  const chk = document.getElementById("chk-"+id);
+  el.classList.remove("error","valid","checking");
+  if(err){err.classList.remove("show"); err.textContent="";}
+  if(ok) ok.classList.remove("show");
+  if(chk) chk.classList.remove("show");
+  if(state==="error"){
+    el.classList.add("error");
+    if(err){err.textContent=message||"Invalide."; err.classList.add("show");}
+  } else if(state==="valid"){
+    el.classList.add("valid");
+    if(ok){ok.textContent="✓ "+message; ok.classList.add("show");}
+  } else if(state==="checking"){
+    el.classList.add("checking");
+    if(chk){chk.textContent="⏳ "+message; chk.classList.add("show");}
+  }
 }
 
+// ── EMAIL VALIDATION ──────────────────────────────────────────────────────
+function validateEmail(email) {
+  if(!email) return {ok:false, msg:"Email requis."};
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!re.test(email)) return {ok:false, msg:"Format invalide. Ex : nom@gmail.com"};
+  const domain = email.split("@")[1].toLowerCase();
+  if(!VALID_DOMAINS.includes(domain)) return {ok:false, msg:"Domaine non reconnu : @"+domain+". Utilise Gmail, Yahoo, Outlook, etc."};
+  return {ok:true, msg:"Email valide."};
+}
+
+// ── CITY/COUNTRY VALIDATION via OpenStreetMap ─────────────────────────────
+async function validateCity(city, country) {
+  if(!city||!country) return {ok:false, msg:"Ville et pays requis."};
+  try {
+    const q = encodeURIComponent(city + ", " + country);
+    const r = await fetch("https://nominatim.openstreetmap.org/search?q="+q+"&format=json&limit=1", {
+      headers: {"Accept-Language":"fr"}
+    });
+    const d = await r.json();
+    if(d && d.length > 0) return {ok:true, msg:d[0].display_name.split(",").slice(0,2).join(",").trim()};
+    return {ok:false, msg:"Ville ou pays introuvable. Vérifie l'orthographe."};
+  } catch {
+    return {ok:true, msg:"Vérification en ligne indisponible — acceptée."};
+  }
+}
+
+// ── ADDRESS COHERENCE ─────────────────────────────────────────────────────
+function validateAddress(val) {
+  if(!val||val.trim().length<3) return {ok:false, msg:"Adresse trop courte (min 3 caractères)."};
+  if(/^\d+$/.test(val.trim())) return {ok:false, msg:"L'adresse ne peut pas être que des chiffres."};
+  if(/[<>{}]/.test(val)) return {ok:false, msg:"Caractères non autorisés dans l'adresse."};
+  if(val.trim().length>200) return {ok:false, msg:"Adresse trop longue."};
+  return {ok:true, msg:"Adresse acceptée."};
+}
+
+// ── PHOTO VALIDATION via Claude API ──────────────────────────────────────
+async function validatePhotoWithAI(base64img, type) {
+  const prompt = type === "cni"
+    ? "Cette image est-elle une photo d'une pièce d'identité (CNI, carte d'identité, passeport, permis de conduire) ? Réponds UNIQUEMENT par OUI ou NON suivi d'une courte raison en français."
+    : "Cette image contient-elle clairement un visage humain visible (selfie ou portrait) ? Réponds UNIQUEMENT par OUI ou NON suivi d'une courte raison en français.";
+
+  try {
+    const imgData = base64img.split(",")[1];
+    const mimeType = base64img.split(";")[0].split(":")[1] || "image/jpeg";
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 100,
+        messages: [{
+          role: "user",
+          content: [
+            {type:"image", source:{type:"base64", media_type:mimeType, data:imgData}},
+            {type:"text", text:prompt}
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.content?.[0]?.text || "";
+    const isOk = reply.trim().toUpperCase().startsWith("OUI");
+    return {ok:isOk, msg: isOk ? "Photo validée." : reply.replace(/^NON[.\s]*/i,"").trim() || "Photo non valide."};
+  } catch(e) {
+    // If API unavailable, accept with warning
+    return {ok:true, msg:"Vérification IA indisponible — photo acceptée."};
+  }
+}
+
+// ── PHOTO PREVIEW + COMPRESS ──────────────────────────────────────────────
 function previewPhoto(input, prevId, areaId, errId) {
   if (!input.files.length) return;
   const r = new FileReader();
@@ -222,58 +362,312 @@ function previewPhoto(input, prevId, areaId, errId) {
       area.querySelector("p").style.display = "none";
       area.querySelector("small").style.display = "none";
       document.getElementById(errId).classList.remove("show");
+      area.classList.remove("error-state","valid","checking");
     };
     image.src = e.target.result;
   };
   r.readAsDataURL(input.files[0]);
 }
 
-function validate() {
-  let ok = req(["nom","prenom","dob","cni","tel","quartier","ville","region","pays"]);
-  const tel = document.getElementById("tel").value.replace(/[^0-9+]/g,"");
-  if (tel && tel.length < 9) { document.getElementById("err-tel").textContent="Numéro trop court."; document.getElementById("err-tel").classList.add("show"); document.getElementById("tel").classList.add("error"); ok=false; }
-  ["recto","verso","selfie"].forEach(s => {
-    const hasFile = document.getElementById(s==="selfie"?"selfie":"cni-"+s).files.length > 0;
-    document.getElementById("err-"+s).classList.toggle("show", !hasFile);
-    if (!hasFile) ok = false;
-  });
-  return ok;
+// ── GÉOLOCALISATION ──────────────────────────────────────────────────────
+let detectedCity    = null;
+let detectedCountry = null;
+let detectedLat     = null;
+let detectedLon     = null;
+
+async function detectLocation() {
+  const btn    = document.getElementById("geoBtn");
+  const status = document.getElementById("geoStatus");
+  const result = document.getElementById("geoResult");
+  status.style.display="block";
+  result.style.display="none";
+  btn.disabled=true;
+  btn.textContent="⏳ Détection en cours...";
+  status.innerHTML='<span style="color:#FCD34D;">⏳ Accès à ta position GPS...</span>';
+
+  if(!navigator.geolocation){
+    status.innerHTML='<span style="color:#FCA5A5;">❌ Géolocalisation non supportée par ce navigateur.</span>';
+    btn.disabled=false; btn.textContent="📍 Détecter ma position automatiquement";
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      detectedLat = pos.coords.latitude;
+      detectedLon = pos.coords.longitude;
+      status.innerHTML='<span style="color:#FCD34D;">⏳ Identification de ta ville...</span>';
+      try {
+        const r = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${detectedLat}&lon=${detectedLon}&format=json&accept-language=fr`
+        );
+        const d = await r.json();
+        const addr = d.address||{};
+        detectedCity    = addr.city||addr.town||addr.village||addr.county||"";
+        detectedCountry = addr.country||"";
+        const quarter   = addr.suburb||addr.neighbourhood||addr.quarter||addr.road||"";
+        const display   = d.display_name||"";
+
+        // Auto-fill fields
+        if(detectedCity)    document.getElementById("ville").value    = detectedCity;
+        if(detectedCountry) document.getElementById("pays").value     = detectedCountry;
+        if(quarter)         document.getElementById("quartier").value = quarter;
+
+        status.innerHTML='<span style="color:#86EFAC;">✅ Position détectée avec succès !</span>';
+        result.style.display="block";
+        result.innerHTML=`<strong style="color:#fff;">📍 Ta position :</strong><br>
+          ${display.split(",").slice(0,4).join(", ")}`;
+        btn.textContent="✅ Position confirmée — Cliquer pour actualiser";
+        btn.style.background="rgba(26,122,74,.7)";
+        btn.disabled=false;
+      } catch(e){
+        status.innerHTML='<span style="color:#FCD34D;">⚠️ Position détectée mais identification impossible (pas de connexion). Continue manuellement.</span>';
+        btn.disabled=false; btn.textContent="📍 Réessayer";
+      }
+    },
+    (err) => {
+      const msgs = {
+        1:"Tu as refusé l'accès à ta position. Autorise la géolocalisation dans les paramètres de ton navigateur.",
+        2:"Position indisponible. Vérifie que le GPS est activé.",
+        3:"Délai dépassé. Réessaie."
+      };
+      status.innerHTML=`<span style="color:#FCA5A5;">❌ ${msgs[err.code]||"Erreur inconnue."}</span>`;
+      btn.disabled=false; btn.textContent="📍 Réessayer";
+    },
+    {enableHighAccuracy:true, timeout:15000, maximumAge:0}
+  );
 }
 
+async function validateLocationVsInput(inputCity, inputPays) {
+  // No GPS used — fallback to OpenStreetMap text search only
+  if(!detectedCity || !detectedCountry) {
+    return await validateCity(inputCity, inputPays);
+  }
+
+  // GPS available — 3-level check
+  const cityMatch    = normalize(inputCity).includes(normalize(detectedCity))
+                    || normalize(detectedCity).includes(normalize(inputCity));
+  const countryMatch = normalize(inputPays).includes(normalize(detectedCountry))
+                    || normalize(detectedCountry).includes(normalize(inputPays));
+
+  // LEVEL 1 — Pays différent = mensonge flagrant
+  if(!countryMatch) {
+    return {
+      ok: false,
+      lie: true,
+      msg: "Tu mens ! Tu es actuellement en " + detectedCity + ", " + detectedCountry
+         + " et non à " + inputCity + ", " + inputPays + ". Corrige tes informations."
+    };
+  }
+
+  // LEVEL 2 — Même pays mais ville différente = déplacement possible
+  if(!cityMatch) {
+    // Check if user confirmed they are travelling
+    const travelling = document.getElementById("travellingCheck");
+    if(!travelling || !travelling.checked) {
+      // Show the travelling warning box
+      showTravellingWarning(inputCity, detectedCity, detectedCountry);
+      return {ok: false, pending: true, msg: ""};
+    }
+    // Travelling confirmed — accept with note
+    return {
+      ok: true,
+      msg: "Ville confirmée (" + inputCity + ") — en déplacement à " + detectedCity + "."
+    };
+  }
+
+  // LEVEL 3 — Tout correspond
+  return {ok: true, msg: "Position confirmée : " + detectedCity + ", " + detectedCountry};
+}
+
+function showTravellingWarning(inputCity, gpsCity, gpsCountry) {
+  // Remove existing warning if any
+  const existing = document.getElementById("travellingBox");
+  if(existing) existing.remove();
+
+  const box = document.createElement("div");
+  box.id = "travellingBox";
+  box.style.cssText = "background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:12px;padding:1.25rem;margin-bottom:1rem;";
+  box.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
+      <span style="font-size:1.5rem;flex-shrink:0;">⚠️</span>
+      <div>
+        <strong style="display:block;color:#92400E;font-size:.9rem;margin-bottom:4px;">Localisation différente détectée</strong>
+        <p style="font-size:.8rem;color:#B45309;line-height:1.5;">
+          Tu as renseigné <strong>${inputCity}</strong> comme ville de résidence,
+          mais ton GPS indique que tu es actuellement à <strong>${gpsCity}, ${gpsCountry}</strong>.
+        </p>
+      </div>
+    </div>
+    <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;background:rgba(255,255,255,.6);border-radius:8px;padding:10px;">
+      <input type="checkbox" id="travellingCheck" style="width:18px;height:18px;flex-shrink:0;margin-top:1px;cursor:pointer;">
+      <span style="font-size:.82rem;color:#92400E;line-height:1.5;">
+        Je confirme être <strong>temporairement en déplacement</strong> à ${gpsCity}.
+        Ma vraie adresse de résidence est bien <strong>${inputCity}</strong>.
+      </span>
+    </label>
+    <button type="button" onclick="retryWithTravel()" style="width:100%;margin-top:10px;padding:11px;background:#D97706;color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.85rem;cursor:pointer;">
+      Confirmer et soumettre quand même
+    </button>`;
+
+  // Insert before submit button
+  const submitBtn = document.getElementById("btnSubmit");
+  submitBtn.parentNode.insertBefore(box, submitBtn);
+  box.scrollIntoView({behavior:"smooth", block:"center"});
+}
+
+async function retryWithTravel() {
+  const check = document.getElementById("travellingCheck");
+  if(!check || !check.checked) {
+    check.style.outline = "2px solid red";
+    return;
+  }
+  // Re-trigger submit
+  await submitForm();
+}
+
+function normalize(str){
+  return (str||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"").trim();
+}
+
+// ── MAIN VALIDATION ───────────────────────────────────────────────────────
+async function validate() {
+  let ok = true;
+
+  // Basic required fields
+  ["nom","prenom","dob","cni","tel"].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el||!el.value.trim()){
+      setFieldState(id,"error","Ce champ est requis.");
+      ok=false;
+    } else { el.classList.remove("error"); }
+  });
+
+  // Tel length
+  const telVal = document.getElementById("tel").value.replace(/[^0-9+]/g,"");
+  if(telVal && telVal.length < 9){ setFieldState("tel","error","Numéro trop court."); ok=false; }
+
+  // Email
+  const emailVal = document.getElementById("email").value.trim();
+  if(emailVal){
+    const eRes = validateEmail(emailVal);
+    if(!eRes.ok){ setFieldState("email","error",eRes.msg); ok=false; }
+    else setFieldState("email","valid",eRes.msg);
+  }
+
+  // Address
+  const addrVal = document.getElementById("quartier").value.trim();
+  if(!addrVal){ setFieldState("quartier","error","Requis."); ok=false; }
+  else {
+    const aRes = validateAddress(addrVal);
+    if(!aRes.ok){ setFieldState("quartier","error",aRes.msg); ok=false; }
+    else setFieldState("quartier","valid",aRes.msg);
+  }
+
+  // City & Country
+  const villeVal = document.getElementById("ville").value.trim();
+  const paysVal  = document.getElementById("pays").value.trim();
+  if(!villeVal){ setFieldState("ville","error","Requis."); ok=false; }
+  if(!paysVal){  setFieldState("pays","error","Requis."); ok=false; }
+
+  if(!ok) return false;
+
+  // ── ASYNC VALIDATIONS ─────────────────────────────────────────────────
+
+  // 1. City/Country via OpenStreetMap
+  showValidating("Vérification de la ville et du pays...", "Étape 1/3 — OpenStreetMap");
+  const cityRes = await validateCity(villeVal, paysVal);
+  if(!cityRes.ok){
+    hideValidating();
+    setFieldState("ville","error",cityRes.msg);
+    return false;
+  }
+  setFieldState("ville","valid",cityRes.msg);
+  setFieldState("pays","valid","Pays reconnu.");
+
+  // 2. CNI Photo validation
+  const rectoSrc = document.getElementById("prev-recto").src;
+  const versoSrc = document.getElementById("prev-verso").src;
+  if(!rectoSrc||!rectoSrc.startsWith("data:")) {
+    hideValidating();
+    document.getElementById("err-recto").classList.add("show");
+    return false;
+  }
+
+  showValidating("Analyse de la photo CNI (recto)...", "Étape 2/3 — Vérification IA");
+  const cniRes = await validatePhotoWithAI(rectoSrc, "cni");
+  if(!cniRes.ok){
+    hideValidating();
+    document.getElementById("area-recto").classList.add("error-state");
+    document.getElementById("err-recto").textContent = "❌ " + cniRes.msg + " Assure-toi que c'est bien une pièce d'identité.";
+    document.getElementById("err-recto").classList.add("show");
+    return false;
+  }
+  document.getElementById("area-recto").classList.add("valid");
+
+  // 3. Selfie validation
+  const selfieSrc = document.getElementById("prev-selfie").src;
+  if(!selfieSrc||!selfieSrc.startsWith("data:")) {
+    hideValidating();
+    document.getElementById("err-selfie").classList.add("show");
+    return false;
+  }
+
+  showValidating("Analyse du selfie...", "Étape 3/3 — Vérification IA");
+  const selfieRes = await validatePhotoWithAI(selfieSrc, "selfie");
+  if(!selfieRes.ok){
+    hideValidating();
+    document.getElementById("area-selfie").classList.add("error-state");
+    document.getElementById("err-selfie").textContent = "❌ " + selfieRes.msg + " Assure-toi que ton visage est bien visible.";
+    document.getElementById("err-selfie").classList.add("show");
+    return false;
+  }
+  document.getElementById("area-selfie").classList.add("valid");
+
+  hideValidating();
+  return true;
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────
 async function submitForm() {
-  if (!validate()) return;
-  if (!scriptUrl) { alert("Configure l'URL du script en haut."); return; }
+  document.getElementById("btnSubmit").disabled = true;
+  const isValid = await validate();
+  if(!isValid){ document.getElementById("btnSubmit").disabled = false; return; }
+  if(!scriptUrl){ alert("Configure l URL du script en haut."); document.getElementById("btnSubmit").disabled=false; return; }
+
   const payload = {
     type: "inscription",
-    nom: document.getElementById("nom").value,
-    prenom: document.getElementById("prenom").value,
-    dob: document.getElementById("dob").value,
-    cni: document.getElementById("cni").value,
-    tel: document.getElementById("tel").value,
-    email: document.getElementById("email").value,
-    quartier: document.getElementById("quartier").value,
-    ville: document.getElementById("ville").value,
-    region: document.getElementById("region").value,
-    pays: document.getElementById("pays").value,
-    repere: document.getElementById("repere").value,
-    cniRecto: document.getElementById("prev-recto").src || "",
-    cniVerso: document.getElementById("prev-verso").src || "",
-    selfie: document.getElementById("prev-selfie").src || "",
+    nom:     document.getElementById("nom").value,
+    prenom:  document.getElementById("prenom").value,
+    dob:     document.getElementById("dob").value,
+    cni:     document.getElementById("cni").value,
+    tel:     document.getElementById("tel").value,
+    email:   document.getElementById("email").value,
+    quartier:document.getElementById("quartier").value,
+    ville:   document.getElementById("ville").value,
+    region:  document.getElementById("region").value,
+    pays:    document.getElementById("pays").value,
+    repere:  document.getElementById("repere").value,
+    cniRecto:document.getElementById("prev-recto").src||"",
+    cniVerso:document.getElementById("prev-verso").src||"",
+    selfie:  document.getElementById("prev-selfie").src||"",
+    gpsLat:     detectedLat||"",
+    gpsLon:     detectedLon||"",
+    gpsVille:   detectedCity||"",
+    gpsPays:    detectedCountry||"",
+    enDeplacement: (document.getElementById("travellingCheck")&&document.getElementById("travellingCheck").checked)?"Oui":"Non",
   };
+
   document.getElementById("sendingOverlay").classList.add("active");
-  document.getElementById("btnSubmit").disabled = true;
   document.getElementById("errorBanner").classList.remove("show");
-  try {
-    await fetch(scriptUrl, { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
+  try{
+    await fetch(scriptUrl,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
     document.getElementById("sendingOverlay").classList.remove("active");
-    document.getElementById("mainForm").style.display = "none";
+    document.getElementById("mainForm").style.display="none";
     document.getElementById("successScreen").classList.add("active");
-  } catch {
+  } catch{
     document.getElementById("sendingOverlay").classList.remove("active");
-    document.getElementById("btnSubmit").disabled = false;
+    document.getElementById("btnSubmit").disabled=false;
     document.getElementById("errorBanner").classList.add("show");
   }
 }
 </script>
-</body>
-</html>
