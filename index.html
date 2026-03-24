@@ -266,6 +266,13 @@ function renderLinks(m){
     h+=cardClick('i-gray','💰','Confirmer une réception de fonds',"Disponible après approbation de ton dossier.",'showNoEdit()','<span class="card-badge badge-lock">🔒 En attente</span>','›');
   }
 
+  // Cotisation
+  if(isOk){
+    h+=card('i-gold','💳','Soumettre une cotisation',"Cotiser pour le tour d'un autre membre.",'cotisation_tontine.html','<span class="card-badge badge-ok">✅ Disponible</span>','›');
+  } else {
+    h+=cardClick('i-gray','💳','Soumettre une cotisation',"Disponible après approbation de ton dossier.",'showNoEdit()','<span class="card-badge badge-lock">🔒 En attente</span>','›');
+  }
+
   // Google Sheets — tout le monde peut voir
   h+=card('i-green','📊','Google Sheets — Tableau des membres',"Consulter les données de la tontine.",'https://sheets.google.com','<span class="card-badge badge-view">👁️ Consultation</span>','↗');
 
