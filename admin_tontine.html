@@ -162,6 +162,7 @@
       <button class="page-tab active" onclick="showPage('members',this)">👥 Membres</button>
       <button class="page-tab" id="tabAdmins" onclick="showPage('admins',this)">🛡️ Gérer les admins</button>
       <button class="page-tab" id="tabManuel" onclick="showPage('manuel',this)">✏️ Membres manuels</button>
+      <button class="page-tab" id="tabCotisations" onclick="showPage('cotisations',this)">💳 Cotisations</button>
       <button class="page-tab" onclick="showPage('settings',this)">⚙️ Paramètres</button>
     </div>
 
@@ -225,6 +226,22 @@
       <h3 style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:.75rem;">Membres ajoutés manuellement</h3>
       <div id="manualMembersList" style="display:flex;flex-direction:column;gap:10px;">
         <div class="empty-state"><div class="icon">✏️</div><p>Aucun membre ajouté manuellement.</p></div>
+      </div>
+    </div>
+
+    <!-- PAGE COTISATIONS -->
+    <div class="page" id="page-cotisations">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3 style="font-size:.95rem;font-weight:700;color:var(--navy)">💳 Cotisations soumises</h3>
+        <button onclick="loadCotisations()" style="padding:7px 14px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;">🔄 Actualiser</button>
+      </div>
+      <div class="filter-tabs" style="margin-bottom:1rem;">
+        <button class="ftab active" onclick="filterCot('all',this)">Toutes</button>
+        <button class="ftab" onclick="filterCot('En attente',this)">⏳ En attente</button>
+        <button class="ftab" onclick="filterCot('Approuvee',this)">✅ Approuvées</button>
+      </div>
+      <div id="cotisationsList">
+        <div class="empty-state"><div class="icon">💳</div><p>Clique sur Actualiser pour charger les cotisations.</p></div>
       </div>
     </div>
 
@@ -589,11 +606,142 @@ function setMemberPassword(){
   }
 }
 
+// ── COTISATIONS ───────────────────────────────────────────────────────────
+let allCotisations = [], currentCotFilter = 'all';
+
+async function loadCotisations(){
+  const url = localStorage.getItem(K_URL);
+  if(!url){showToast('Configure l URL du script dans Parametres');return;}
+  document.getElementById('cotisationsList').innerHTML='<div class="empty-state"><div class="icon">⏳</div><p>Chargement...</p></div>';
+  try{
+    const r = await fetch(url+'?action=getCotisations');
+    const d = await r.json();
+    allCotisations = d.cotisations||[];
+    renderCotisations();
+  } catch{
+    document.getElementById('cotisationsList').innerHTML='<div class="empty-state"><div class="icon">❌</div><p>Erreur de chargement.</p></div>';
+  }
+}
+
+function filterCot(f,el){
+  currentCotFilter=f;
+  document.querySelectorAll('#page-cotisations .ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderCotisations();
+}
+
+function renderCotisations(){
+  const list = document.getElementById('cotisationsList');
+  let filtered = allCotisations.filter(c=> currentCotFilter==='all' || c.statut===currentCotFilter);
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="icon">💳</div><p>Aucune cotisation trouvée.</p></div>';return;}
+  list.innerHTML = filtered.map(c=>{
+    const isPending = c.statut==='En attente';
+    const color = isPending ? 'var(--warning)' : 'var(--success)';
+    const bg    = isPending ? '#FEF3C7' : '#D1FAE5';
+    const badge = isPending ? '⏳ En attente' : '✅ Approuvée';
+    return `<div style="background:#fff;border:1.5px solid var(--border);border-left:4px solid ${color};border-radius:12px;padding:14px 16px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div>
+          <div style="font-weight:700;font-size:.92rem;color:var(--navy)">${c.prenom} ${c.nom}</div>
+          <div style="font-size:.75rem;color:var(--text-soft);margin-top:2px">${c.tel} · ${c.dateSoumission}</div>
+        </div>
+        <span style="background:${bg};color:${isPending?'#92400E':'#065F46'};font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:20px;">${badge}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.82rem;margin-bottom:12px;">
+        <div><span style="color:var(--text-soft);display:block;font-size:.7rem;text-transform:uppercase">Montant</span><strong style="color:var(--gold)">${parseInt(c.montant||0).toLocaleString('fr-FR')} FCFA</strong></div>
+        <div><span style="color:var(--text-soft);display:block;font-size:.7rem;text-transform:uppercase">Tour</span><strong>N° ${c.tour}</strong></div>
+        <div><span style="color:var(--text-soft);display:block;font-size:.7rem;text-transform:uppercase">Date</span><strong>${c.dateCot}</strong></div>
+        <div><span style="color:var(--text-soft);display:block;font-size:.7rem;text-transform:uppercase">Mode</span><strong>${c.mode}</strong></div>
+        <div style="grid-column:1/-1"><span style="color:var(--text-soft);display:block;font-size:.7rem;text-transform:uppercase">N° Transaction</span><strong>${c.transaction}</strong></div>
+      </div>
+      ${isPending ? `<div style="display:flex;gap:8px;">
+        <button onclick="approveCot(${c.rowIndex},'${c.tel}','${c.prenom} ${c.nom}','${c.montant}','${c.tour}','${c.dateCot}','${c.mode}','${c.transaction}')" style="flex:1;padding:10px;background:var(--success);color:#fff;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-weight:600;font-size:.82rem;cursor:pointer;">✅ Approuver</button>
+        <button onclick="rejectCot(${c.rowIndex})" style="flex:1;padding:10px;background:var(--error);color:#fff;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-weight:600;font-size:.82rem;cursor:pointer;">❌ Refuser</button>
+      </div>` : `<div style="font-size:.78rem;color:var(--success);font-weight:600;">✅ Approuvée le ${c.dateApprobation}</div>`}
+    </div>`;
+  }).join('');
+}
+
+async function approveCot(rowIndex, tel, nom, montant, tour, dateCot, mode, transaction){
+  const url = localStorage.getItem(K_URL);
+  if(!url) return;
+  try{
+    const r = await fetch(url+`?action=approveCotisation&rowIndex=${rowIndex}&tel=${encodeURIComponent(tel)}&nom=${encodeURIComponent(nom)}&montant=${montant}&tour=${tour}&dateCot=${encodeURIComponent(dateCot)}&mode=${encodeURIComponent(mode)}&transaction=${encodeURIComponent(transaction)}`);
+    const d = await r.json();
+    if(d.success){
+      showToast('✅ Cotisation approuvée !');
+      // Generate PDF receipt and open WhatsApp
+      generateReceiptAndWhatsApp(nom, tel, montant, tour, dateCot, mode, transaction, d.whatsappUrl);
+      loadCotisations();
+    }
+  } catch(e){ showToast('❌ Erreur approbation'); }
+}
+
+async function rejectCot(rowIndex){
+  if(!confirm('Refuser cette cotisation ?')) return;
+  const url = localStorage.getItem(K_URL);
+  if(!url) return;
+  try{
+    await fetch(url+`?action=approveCotisation&rowIndex=${rowIndex}&statut=Refusee`);
+    showToast('❌ Cotisation refusée.');
+    loadCotisations();
+  } catch{}
+}
+
+function generateReceiptAndWhatsApp(nom, tel, montant, tour, dateCot, mode, transaction, whatsappUrl){
+  const now = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Recu Cotisation</title>
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;color:#1C1C1E;font-size:13px;max-width:500px;margin:0 auto;padding:20px}
+  .hdr{background:#0F2544;color:#fff;padding:24px;text-align:center;border-radius:8px 8px 0 0}
+  .hdr h1{font-size:18px;margin-bottom:4px}.hdr p{opacity:.6;font-size:11px}
+  .bar{height:4px;background:#C9933A}
+  .body{border:1px solid #ddd;border-top:none;padding:24px;border-radius:0 0 8px 8px}
+  .sec-title{background:#F0F4FA;padding:7px 12px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#0F2544;border-left:3px solid #C9933A;margin:16px 0 10px}
+  .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;font-size:12px}
+  .row:last-child{border-bottom:none}.row span:first-child{color:#888}.row span:last-child{font-weight:600}
+  .amount{text-align:center;padding:20px;background:#FDF6E7;border-radius:8px;margin:16px 0}
+  .amount .val{font-size:2rem;font-weight:700;color:#C9933A;font-family:Georgia,serif}
+  .amount .lbl{font-size:11px;color:#888;margin-top:4px}
+  .stamp{text-align:center;padding:14px;color:#1A7A4A;font-weight:700;border:2px solid #1A7A4A;border-radius:8px;margin-top:16px;font-size:13px}
+  .footer{text-align:center;padding:14px;font-size:10px;color:#888;margin-top:16px}
+  @media print{body{padding:0}}</style></head><body>
+  <div class="hdr"><h1>RECU DE COTISATION</h1><p>Tontine Securisee — ${now}</p></div>
+  <div class="bar"></div>
+  <div class="body">
+    <div class="sec-title">Membre</div>
+    <div class="row"><span>Nom & Prenom</span><span>${nom}</span></div>
+    <div class="row"><span>Telephone</span><span>${tel}</span></div>
+    <div class="amount"><div class="val">${parseInt(montant).toLocaleString('fr-FR')} FCFA</div><div class="lbl">Montant de la cotisation</div></div>
+    <div class="sec-title">Details de la cotisation</div>
+    <div class="row"><span>Tour / Cycle</span><span>N ${tour}</span></div>
+    <div class="row"><span>Date de cotisation</span><span>${dateCot}</span></div>
+    <div class="row"><span>Mode de paiement</span><span>${mode}</span></div>
+    <div class="row"><span>N Transaction</span><span>${transaction}</span></div>
+    <div class="row"><span>Date d'approbation</span><span>${now}</span></div>
+    <div class="stamp">COTISATION VALIDEE ET APPROUVEE</div>
+  </div>
+  <div class="footer">Document officiel — Tontine Securisee</div>
+  <script>window.onload=()=>{setTimeout(()=>window.print(),500);}<\/script>
+  </body></html>`;
+
+  // Open receipt in new tab (member can print/save as PDF)
+  const blob = new Blob([html],{type:'text/html'});
+  const receiptUrl = URL.createObjectURL(blob);
+  window.open(receiptUrl,'_blank');
+
+  // Open WhatsApp after short delay
+  setTimeout(()=>{
+    if(whatsappUrl && confirm('Envoyer la notification WhatsApp au membre ?')){
+      window.open(whatsappUrl,'_blank');
+    }
+  },1000);
+}
+
 function showPage(page,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.page-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active'); el.classList.add('active');
-  if(page==='admins'){renderAdminsList();populateMemberSelect();} if(page==='manuel'){renderManualList();} if(page==='settings'){populatePwdSelect();}
+  if(page==='admins'){renderAdminsList();populateMemberSelect();} if(page==='manuel'){renderManualList();} if(page==='settings'){populatePwdSelect();} if(page==='cotisations'){loadCotisations();}
 }
 function switchFilter(f,el){currentFilter=f;el.parentNode.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderMembers();}
 function switchSource(s,el){currentSource=s;el.parentNode.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));el.classList.add('active');mergeAll();renderStats();renderMembers();}
