@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tontine — Cotisation</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F2544;--navy-mid:#1A3A6B;--gold:#C9933A;--gold-light:#E8B96A;--gold-pale:#FDF6E7;--cream:#FAFAF7;--text:#1C1C1E;--text-soft:#5A5A6A;--border:#DDD8CE;--success:#1A7A4A;--error:#C0392B;--radius:14px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"DM Sans",sans-serif;background:var(--cream);min-height:100vh;}
+.header{background:linear-gradient(160deg,var(--navy),var(--navy-mid));padding:2rem 1.5rem 3rem;position:relative;overflow:hidden;}
+.header::before{content:"";position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(201,147,58,.12);}
+.header-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(201,147,58,.2);border:1px solid rgba(201,147,58,.4);color:var(--gold-light);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:1rem;}
+.header h1{font-family:"Playfair Display",serif;font-size:1.85rem;color:#fff;line-height:1.2;margin-bottom:.5rem;position:relative;z-index:1;}
+.header p{color:rgba(255,255,255,.6);font-size:.875rem;line-height:1.5;position:relative;z-index:1;}
+.gold-line{width:40px;height:3px;background:var(--gold);border-radius:2px;margin:1rem 0;}
+.body{padding:1.5rem;max-width:600px;margin:0 auto;}
+.step-title{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;}
+.step-num{width:34px;height:34px;background:var(--navy);color:var(--gold-light);border-radius:50%;display:grid;place-items:center;font-family:"Playfair Display",serif;font-size:1rem;font-weight:700;flex-shrink:0;}
+.step-title h2{font-size:1.05rem;font-weight:600;color:var(--navy);}
+.field{margin-bottom:1.25rem;}
+.field label{display:block;font-size:.8rem;font-weight:600;color:var(--text-soft);letter-spacing:.03em;text-transform:uppercase;margin-bottom:6px;}
+.field label .req{color:var(--gold);margin-left:2px;}
+.field input,.field select{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:"DM Sans",sans-serif;font-size:.95rem;background:#fff;color:var(--text);transition:border-color .2s;-webkit-appearance:none;}
+.field input:focus,.field select:focus{outline:none;border-color:var(--navy-mid);box-shadow:0 0 0 3px rgba(26,58,107,.1);}
+.field input.error{border-color:var(--error);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field-hint{font-size:.75rem;color:var(--text-soft);margin-top:5px;}
+.field-error{font-size:.75rem;color:var(--error);margin-top:5px;display:none;}
+.field-error.show{display:block;}
+.info-box{background:var(--gold-pale);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:12px 14px;font-size:.8rem;color:var(--navy);line-height:1.5;margin-bottom:1.25rem;}
+.amount-display{background:linear-gradient(135deg,var(--navy),var(--navy-mid));border-radius:var(--radius);padding:1.5rem;text-align:center;margin-bottom:1.25rem;}
+.amount-display label{display:block;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:6px;}
+.amount-val{font-family:"Playfair Display",serif;font-size:2rem;font-weight:700;color:var(--gold-light);}
+.currency{font-size:1rem;opacity:.7;margin-left:4px;}
+.divider{height:1px;background:var(--border);margin:1.5rem 0;}
+.btn-submit{width:100%;padding:16px;background:linear-gradient(135deg,var(--gold),#A87830);color:#fff;border:none;border-radius:var(--radius);font-family:"DM Sans",sans-serif;font-size:1rem;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(201,147,58,.4);transition:all .2s;margin-top:1.5rem;}
+.btn-submit:hover{transform:translateY(-1px);filter:brightness(1.05);}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.sending-overlay{display:none;position:fixed;inset:0;background:rgba(15,37,68,.85);z-index:999;place-items:center;flex-direction:column;gap:1rem;}
+.sending-overlay.active{display:flex;}
+.spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.sending-overlay p{color:#fff;font-weight:600;}
+.success-screen{display:none;text-align:center;padding:3rem 1.5rem;animation:fadeIn .5s ease;}
+.success-screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.success-icon{width:80px;height:80px;background:linear-gradient(135deg,#D97706,#92400E);border-radius:50%;display:grid;place-items:center;font-size:2.5rem;margin:0 auto 1.5rem;box-shadow:0 8px 32px rgba(217,119,6,.25);}
+.success-screen h2{font-family:"Playfair Display",serif;font-size:1.5rem;color:var(--navy);margin-bottom:.75rem;}
+.success-screen p{color:var(--text-soft);font-size:.9rem;line-height:1.6;max-width:320px;margin:0 auto 2rem;}
+.pending-box{background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;text-align:left;}
+.pending-box strong{display:block;color:#92400E;font-size:.95rem;margin-bottom:.4rem;}
+.pending-box p{font-size:.82rem;color:#B45309;line-height:1.5;}
+.error-banner{background:#FEE2E2;border:1px solid #FCA5A5;border-radius:8px;padding:12px 14px;font-size:.82rem;color:#7F1D1D;margin-top:1rem;display:none;}
+.error-banner.show{display:block;}
+.btn-back{width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);font-family:"DM Sans",sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">💳 Tontine Sécurisée</div>
+  <h1>Formulaire de<br>Cotisation</h1>
+  <div class="gold-line"></div>
+  <p>Remplis ce formulaire après chaque cotisation pour qu'elle soit validée par l'administratrice.</p>
+</div>
+
+<div class="body">
+  <div id="mainForm">
+
+    <!-- ÉTAPE 1 : VÉRIFICATION -->
+    <div class="step-title"><div class="step-num">1</div><h2>Vérifie ton identité</h2></div>
+    <div class="info-box">🔒 Entre ton numéro de téléphone et ton mot de passe pour confirmer que c'est bien toi.</div>
+    <div class="field">
+      <label>Téléphone <span class="req">*</span></label>
+      <input type="tel" id="tel" placeholder="+237 6XX XX XX XX">
+      <div class="field-error" id="err-tel">Requis.</div>
+    </div>
+    <div class="field">
+      <label>Mot de passe <span class="req">*</span></label>
+      <input type="password" id="pwd" placeholder="••••••••">
+      <div class="field-error" id="err-pwd">Mot de passe incorrect.</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ÉTAPE 2 : COTISATION -->
+    <div class="step-title"><div class="step-num">2</div><h2>Détails de la cotisation</h2></div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Nom <span class="req">*</span></label>
+        <input type="text" id="nom" placeholder="MBARGA" readonly style="background:#F9FAFB;">
+        <div class="field-hint">Rempli automatiquement</div>
+      </div>
+      <div class="field">
+        <label>Prénom(s) <span class="req">*</span></label>
+        <input type="text" id="prenom" placeholder="Jean Paul" readonly style="background:#F9FAFB;">
+        <div class="field-hint">Rempli automatiquement</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Montant cotisé (FCFA) <span class="req">*</span></label>
+      <input type="number" id="montant" placeholder="Ex : 25000" min="0" oninput="updateAmount()">
+      <div class="field-error" id="err-montant">Requis.</div>
+    </div>
+
+    <div class="amount-display" id="amountDisplay" style="display:none">
+      <label>Montant confirmé</label>
+      <div class="amount-val" id="amountVal">0<span class="currency">FCFA</span></div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Date de cotisation <span class="req">*</span></label>
+        <input type="date" id="dateCot">
+        <div class="field-error" id="err-dateCot">Requis.</div>
+      </div>
+      <div class="field">
+        <label>Tour / Cycle N° <span class="req">*</span></label>
+        <input type="number" id="tour" placeholder="Ex : 3" min="1">
+        <div class="field-error" id="err-tour">Requis.</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Mode de paiement <span class="req">*</span></label>
+      <select id="mode">
+        <option value="">— Choisir —</option>
+        <option>Mobile Money (MTN)</option>
+        <option>Mobile Money (Orange)</option>
+        <option>Espèces en main propre</option>
+        <option>Virement bancaire</option>
+        <option>Autre</option>
+      </select>
+      <div class="field-error" id="err-mode">Requis.</div>
+    </div>
+
+    <div class="field">
+      <label>N° de transaction <span class="req">*</span></label>
+      <input type="text" id="transaction" placeholder="Ex : TXN-2024-XXXXXX">
+      <div class="field-hint">Numéro de confirmation reçu par SMS après le transfert.</div>
+      <div class="field-error" id="err-transaction">Requis.</div>
+    </div>
+
+    <div class="error-banner" id="errorBanner">❌ Erreur lors de l'envoi. Vérifie ta connexion.</div>
+    <button class="btn-submit" id="btnSubmit" onclick="submitForm()">✔ Soumettre ma cotisation</button>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">⏳</div>
+    <h2>Cotisation soumise !</h2>
+    <p>Ta cotisation a été enregistrée et est en attente de validation par l'administratrice.</p>
+    <div class="pending-box">
+      <strong>⏳ En attente d'approbation</strong>
+      <p>L'administratrice va vérifier la réception du transfert et approuver ta cotisation. Tu recevras une notification WhatsApp dès validation avec ton reçu PDF.</p>
+    </div>
+    <button class="btn-back" onclick="location.href='index.html'">← Retour à l'accueil</button>
+  </div>
+</div>
+
+<div class="sending-overlay" id="sendingOverlay">
+  <div class="spinner"></div>
+  <p>Envoi en cours…</p>
+</div>
+
+<script>
+const K_PWD    = 'tontine_members_pwd';
+const K_URL    = 'tontine_script_url';
+let currentMember = null;
+
+function getDb(){try{return JSON.parse(localStorage.getItem(K_PWD)||'{}');}catch{return{};}}
+
+// Pré-remplissage si session active
+window.onload = () => {
+  const s = sessionStorage.getItem('tontine_member_session');
+  if(s){
+    try{
+      const m = JSON.parse(s);
+      currentMember = m;
+      const telInput = document.getElementById('tel');
+      telInput.value = m.tel || '';
+      telInput.readOnly = true;
+      telInput.style.background = '#F9FAFB';
+      document.getElementById('nom').value    = m.nom    || '';
+      document.getElementById('prenom').value = m.prenom || '';
+    } catch{}
+  }
+  document.getElementById('dateCot').valueAsDate = new Date();
+};
+
+function updateAmount(){
+  const v = document.getElementById('montant').value;
+  const d = document.getElementById('amountDisplay');
+  if(v && parseInt(v)>0){
+    d.style.display='block';
+    document.getElementById('amountVal').innerHTML = parseInt(v).toLocaleString('fr-FR')+'<span class="currency"> FCFA</span>';
+  } else d.style.display='none';
+}
+
+function formatDate(d){
+  if(!d) return '';
+  const [y,m,j]=d.split('-'); return `${j}/${m}/${y}`;
+}
+
+function req(ids){
+  let ok=true;
+  ids.forEach(id=>{
+    const el=document.getElementById(id), err=document.getElementById('err-'+id);
+    if(!el||!el.value.trim()){if(el) el.classList.add('error'); if(err) err.classList.add('show'); ok=false;}
+    else{el.classList.remove('error'); if(err) err.classList.remove('show');}
+  });
+  return ok;
+}
+
+function validate(){
+  // Vérify password
+  const tel = document.getElementById('tel').value.trim().replace(/\s/g,'');
+  const pwd = document.getElementById('pwd').value;
+  const db  = getDb();
+  const key = Object.keys(db).find(k=>k.replace(/\s/g,'')===tel);
+  const pwdErr = document.getElementById('err-pwd');
+  if(!key || db[key].pwd !== pwd){
+    pwdErr.classList.add('show');
+    document.getElementById('pwd').classList.add('error');
+    return false;
+  }
+  pwdErr.classList.remove('show');
+  document.getElementById('pwd').classList.remove('error');
+  currentMember = db[key];
+  document.getElementById('nom').value    = db[key].nom    || '';
+  document.getElementById('prenom').value = db[key].prenom || '';
+  return req(['montant','dateCot','tour','mode','transaction']);
+}
+
+async function submitForm(){
+  if(!validate()) return;
+  const url = localStorage.getItem(K_URL);
+  if(!url){ alert('URL du script non configurée.'); return; }
+
+  const payload = {
+    type: 'cotisation',
+    nom:         document.getElementById('nom').value,
+    prenom:      document.getElementById('prenom').value,
+    tel:         document.getElementById('tel').value,
+    cni:         currentMember ? currentMember.cni : '',
+    montant:     document.getElementById('montant').value,
+    dateCot:     formatDate(document.getElementById('dateCot').value),
+    tour:        document.getElementById('tour').value,
+    mode:        document.getElementById('mode').value,
+    transaction: document.getElementById('transaction').value,
+  };
+
+  document.getElementById('sendingOverlay').classList.add('active');
+  document.getElementById('btnSubmit').disabled = true;
+  document.getElementById('errorBanner').classList.remove('show');
+
+  try{
+    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    document.getElementById('sendingOverlay').classList.remove('active');
+    document.getElementById('mainForm').style.display='none';
+    document.getElementById('successScreen').classList.add('active');
+  } catch{
+    document.getElementById('sendingOverlay').classList.remove('active');
+    document.getElementById('btnSubmit').disabled=false;
+    document.getElementById('errorBanner').classList.add('show');
+  }
+}
+</script>
+</body>
+</html>
