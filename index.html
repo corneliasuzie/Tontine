@@ -3,110 +3,289 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tontine — Accueil</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>SécuTontine</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--navy:#0F2544;--navy-mid:#1A3A6B;--gold:#C9933A;--gold-light:#E8B96A;--gold-pale:#FDF6E7;--cream:#FAFAF7;--text:#1C1C1E;--text-soft:#5A5A6A;--border:#DDD8CE;--success:#1A7A4A;--error:#C0392B;--warning:#D97706;--purple:#6D28D9;--radius:14px;}
+:root{
+  --navy:#0B1E3A;--navy2:#112647;--navy3:#1A3A6B;
+  --gold:#C9933A;--gold2:#E8B96A;--gold3:#FDF6E7;
+  --cream:#F8F7F2;--white:#FFFFFF;
+  --text:#1C1C1E;--soft:#5A5A6A;--border:#E2DDD4;
+  --success:#1A7A4A;--error:#C0392B;--warning:#D97706;--purple:#6D28D9;
+  --r:14px;--r2:20px;--r3:28px;
+}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:"DM Sans",sans-serif;background:var(--cream);min-height:100vh;}
-.header{background:linear-gradient(160deg,var(--navy),var(--navy-mid));padding:2.5rem 1.5rem 3rem;text-align:center;position:relative;overflow:hidden;}
-.header::before{content:"";position:absolute;top:-60px;right:-60px;width:250px;height:250px;border-radius:50%;background:rgba(201,147,58,.09);}
-.header::after{content:"";position:absolute;bottom:-40px;left:-40px;width:180px;height:180px;border-radius:50%;background:rgba(201,147,58,.06);}
-.logo{font-size:3rem;margin-bottom:.75rem;position:relative;z-index:1;}
-.header h1{font-family:"Playfair Display",serif;font-size:1.9rem;color:#fff;margin-bottom:.4rem;position:relative;z-index:1;}
-.header p{color:rgba(255,255,255,.6);font-size:.85rem;position:relative;z-index:1;}
-.gold-bar{height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-top:1.5rem;position:relative;z-index:1;}
-.top-bar{background:#fff;border-bottom:1.5px solid var(--border);padding:.75rem 1.5rem;display:none;justify-content:space-between;align-items:center;}
+body{font-family:"DM Sans",sans-serif;background:var(--cream);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ── HERO HEADER ── */
+.hero{
+  background:linear-gradient(170deg,var(--navy) 0%,var(--navy2) 55%,var(--navy3) 100%);
+  padding:3rem 1.5rem 5rem;
+  text-align:center;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:"";position:absolute;top:-80px;right:-80px;
+  width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,147,58,.15) 0%,transparent 70%);
+}
+.hero::after{
+  content:"";position:absolute;bottom:-60px;left:-60px;
+  width:240px;height:240px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,147,58,.1) 0%,transparent 70%);
+}
+
+/* LOGO */
+.logo-wrap{
+  display:inline-flex;flex-direction:column;align-items:center;
+  gap:.5rem;margin-bottom:1.5rem;position:relative;z-index:1;
+}
+.logo-ring{
+  width:88px;height:88px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(201,147,58,.25),rgba(201,147,58,.08));
+  border:2px solid rgba(201,147,58,.4);
+  display:grid;place-items:center;
+  box-shadow:0 0 40px rgba(201,147,58,.15);
+}
+.logo-svg{width:52px;height:52px;}
+.logo-name{
+  font-family:"Playfair Display",serif;
+  font-size:1.7rem;font-weight:800;
+  background:linear-gradient(135deg,#fff 30%,var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;letter-spacing:.02em;
+}
+.logo-tagline{
+  font-size:.72rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(255,255,255,.4);position:relative;z-index:1;
+}
+
+.hero-desc{
+  color:rgba(255,255,255,.55);font-size:.88rem;
+  max-width:280px;margin:.75rem auto 0;line-height:1.6;
+  position:relative;z-index:1;
+}
+.gold-rule{
+  width:48px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  margin:1.25rem auto;position:relative;z-index:1;
+}
+
+/* ── TOP BAR ── */
+.top-bar{
+  background:var(--white);border-bottom:1px solid var(--border);
+  padding:.7rem 1.25rem;
+  display:none;justify-content:space-between;align-items:center;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 1px 12px rgba(11,30,58,.06);
+}
 .top-bar.show{display:flex;}
-.top-greeting{font-size:.88rem;font-weight:600;color:var(--navy);}
-.top-greeting span{color:var(--gold);}
+.top-left{display:flex;align-items:center;gap:10px;}
+.top-logo{width:32px;height:32px;border-radius:50%;background:var(--navy);display:grid;place-items:center;}
+.top-appname{font-family:"Playfair Display",serif;font-size:.95rem;font-weight:700;color:var(--navy);}
+.top-greeting{font-size:.8rem;color:var(--soft);}
 .top-right{display:flex;align-items:center;gap:8px;}
-.role-pill{padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700;}
-.pill-super{background:var(--gold-pale);color:#92400E;border:1px solid var(--gold);}
+.role-pill{padding:3px 10px;border-radius:20px;font-size:.65rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+.pill-super{background:var(--gold3);color:#7C5A1A;border:1px solid rgba(201,147,58,.35);}
 .pill-admin{background:#EDE9FE;color:var(--purple);}
-.pill-member{background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;}
-.btn-logout-sm{background:#F3F4F6;border:1px solid var(--border);color:var(--text-soft);padding:5px 12px;border-radius:20px;font-size:.73rem;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;}
-.body{padding:1.5rem;max-width:480px;margin:0 auto;}
-.login-box{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;}
-.login-box h3{font-size:.95rem;font-weight:700;color:var(--navy);margin-bottom:1rem;}
-.field{margin-bottom:.9rem;}
-.field label{display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-soft);margin-bottom:5px;}
-.field input{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:"DM Sans",sans-serif;font-size:.92rem;background:#fff;transition:border-color .2s;}
-.field input:focus{outline:none;border-color:var(--navy);}
-.btn-login{width:100%;padding:13px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-family:"DM Sans",sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s;}
-.btn-login:hover{background:var(--navy-mid);}
-.login-err{background:#FEE2E2;color:#7F1D1D;border-radius:8px;padding:8px 12px;font-size:.78rem;margin-top:8px;display:none;}
+.pill-member{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;}
+.btn-logout-sm{background:var(--cream);border:1px solid var(--border);color:var(--soft);padding:5px 12px;border-radius:20px;font-size:.72rem;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all .2s;}
+.btn-logout-sm:hover{background:#FEE2E2;border-color:#FCA5A5;color:var(--error);}
+
+/* ── BODY ── */
+.body{padding:0 1.25rem 3rem;max-width:500px;margin:0 auto;}
+
+/* ── FLOATING CARD (login) ── */
+.float-card{
+  background:var(--white);border-radius:var(--r3);
+  padding:1.75rem;margin:-2.5rem auto 1.5rem;
+  max-width:440px;
+  box-shadow:0 8px 40px rgba(11,30,58,.12),0 2px 8px rgba(11,30,58,.06);
+  border:1px solid rgba(255,255,255,.8);
+  position:relative;
+}
+.card-eyebrow{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--soft);margin-bottom:.75rem;}
+.field{margin-bottom:1rem;}
+.field label{display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--soft);margin-bottom:5px;}
+.field input{
+  width:100%;padding:13px 15px;
+  border:1.5px solid var(--border);border-radius:10px;
+  font-family:"DM Sans",sans-serif;font-size:.92rem;
+  background:var(--cream);color:var(--text);transition:all .2s;
+}
+.field input:focus{outline:none;border-color:var(--navy3);background:#fff;box-shadow:0 0 0 3px rgba(26,58,107,.08);}
+.btn-login{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--navy2),var(--navy3));
+  color:#fff;border:none;border-radius:11px;
+  font-family:"DM Sans",sans-serif;font-weight:600;font-size:.92rem;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 16px rgba(11,30,58,.25);
+  margin-top:.25rem;
+}
+.btn-login:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(11,30,58,.3);}
+.login-err{background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:9px 12px;font-size:.78rem;color:var(--error);margin-top:8px;display:none;}
 .login-err.show{display:block;}
-.register-link{text-align:center;font-size:.8rem;color:var(--text-soft);margin-top:.75rem;}
-.register-link a{color:var(--navy);font-weight:600;text-decoration:none;}
-.status-card{border-radius:var(--radius);padding:1.1rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:12px;}
-.status-card.approved{background:#D1FAE5;border:1.5px solid #6EE7B7;}
-.status-card.pending{background:#FEF3C7;border:1.5px solid #FCD34D;}
-.status-card.rejected{background:#FEE2E2;border:1.5px solid #FCA5A5;}
-.status-icon{font-size:1.8rem;flex-shrink:0;}
-.st-approved strong{color:#065F46;display:block;font-size:.95rem;}
-.st-pending strong{color:#92400E;display:block;font-size:.95rem;}
-.st-rejected strong{color:#7F1D1D;display:block;font-size:.95rem;}
-.st-approved p,.st-pending p,.st-rejected p{font-size:.78rem;margin-top:3px;line-height:1.4;}
-.st-approved p{color:#047857;}.st-pending p{color:#B45309;}.st-rejected p{color:#B91C1C;}
-.section-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-soft);margin:1.25rem 0 .7rem;padding-left:4px;}
-.card{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.2rem;display:flex;align-items:center;gap:13px;margin-bottom:9px;cursor:pointer;transition:all .2s;text-decoration:none;color:var(--text);}
-.card:hover{border-color:var(--gold);box-shadow:0 4px 18px rgba(15,37,68,.08);transform:translateY(-1px);}
-.card.blocked{border-left:3px solid #FCA5A5;cursor:pointer;}
-.card.blocked:hover{border-color:#FCA5A5;transform:none;box-shadow:none;}
-.card-icon{width:46px;height:46px;border-radius:11px;display:grid;place-items:center;font-size:1.35rem;flex-shrink:0;}
-.i-green{background:#D1FAE5;}.i-blue{background:#DBEAFE;}.i-gold{background:var(--gold-pale);}
-.i-purple{background:#EDE9FE;}.i-gray{background:#F3F4F6;}.i-teal{background:#CCFBF1;}.i-red{background:#FEE2E2;}
-.card-content{flex:1;}
-.card-title{font-weight:700;font-size:.9rem;color:var(--navy);margin-bottom:2px;}
-.card-desc{font-size:.75rem;color:var(--text-soft);line-height:1.4;}
-.card-badge{font-size:.63rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:4px;display:inline-block;}
-.badge-view{background:#DBEAFE;color:#1E40AF;}
-.badge-admin{background:#EDE9FE;color:var(--purple);}
-.badge-super{background:var(--gold-pale);color:#92400E;border:1px solid var(--gold);}
-.badge-lock{background:#FEE2E2;color:#7F1D1D;}
-.badge-ok{background:#D1FAE5;color:#065F46;}
-.card-arrow{color:var(--border);font-size:1rem;flex-shrink:0;}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;place-items:center;padding:1rem;}
+.register-row{text-align:center;font-size:.8rem;color:var(--soft);margin-top:1rem;}
+.register-row a{color:var(--navy3);font-weight:600;text-decoration:none;}
+
+/* ── STATUS CARD ── */
+.status-card{border-radius:var(--r2);padding:1.1rem 1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:13px;}
+.status-card.approved{background:#ECFDF5;border:1.5px solid #A7F3D0;}
+.status-card.pending{background:#FFFBEB;border:1.5px solid #FDE68A;}
+.status-card.rejected{background:#FEF2F2;border:1.5px solid #FECACA;}
+.s-icon{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:1.3rem;flex-shrink:0;}
+.s-icon.approved{background:#D1FAE5;}
+.s-icon.pending{background:#FEF3C7;}
+.s-icon.rejected{background:#FEE2E2;}
+.s-title{font-weight:700;font-size:.92rem;margin-bottom:2px;}
+.s-desc{font-size:.75rem;line-height:1.5;}
+.approved .s-title{color:#065F46;} .approved .s-desc{color:#047857;}
+.pending .s-title{color:#92400E;} .pending .s-desc{color:#B45309;}
+.rejected .s-title{color:#7F1D1D;} .rejected .s-desc{color:#B91C1C;}
+
+/* ── SECTION ── */
+.section-label{
+  font-size:.65rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.14em;color:var(--soft);
+  margin:1.5rem 0 .6rem;padding-left:2px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-label::after{content:"";flex:1;height:1px;background:var(--border);}
+
+/* ── ACTION CARDS ── */
+.acard{
+  background:var(--white);border:1.5px solid var(--border);
+  border-radius:var(--r2);padding:1.1rem 1.25rem;
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:10px;cursor:pointer;
+  transition:all .22s;text-decoration:none;color:var(--text);
+  position:relative;overflow:hidden;
+}
+.acard::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:transparent;transition:background .22s;border-radius:3px 0 0 3px;
+}
+.acard:hover{border-color:rgba(201,147,58,.5);box-shadow:0 4px 20px rgba(11,30,58,.08);transform:translateY(-1px);}
+.acard:hover::before{background:var(--gold);}
+.acard.blocked{cursor:pointer;}
+.acard.blocked:hover{border-color:#FCA5A5;box-shadow:0 4px 16px rgba(192,57,43,.08);}
+.acard.blocked:hover::before{background:var(--error);}
+.acard.super-only:hover::before{background:var(--gold);}
+
+.acard-icon{
+  width:48px;height:48px;border-radius:13px;
+  display:grid;place-items:center;font-size:1.3rem;flex-shrink:0;
+}
+.ic-green{background:#ECFDF5;} .ic-blue{background:#EFF6FF;}
+.ic-gold{background:var(--gold3);} .ic-purple{background:#EDE9FE;}
+.ic-gray{background:#F3F4F6;} .ic-teal{background:#F0FDFA;}
+.ic-red{background:#FEF2F2;} .ic-navy{background:#EEF2FF;}
+
+.acard-body{flex:1;min-width:0;}
+.acard-title{font-weight:600;font-size:.9rem;color:var(--navy);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.acard-desc{font-size:.73rem;color:var(--soft);line-height:1.4;}
+.acard-badge{
+  font-size:.6rem;font-weight:700;padding:2px 7px;
+  border-radius:20px;margin-top:4px;display:inline-block;
+  letter-spacing:.04em;text-transform:uppercase;
+}
+.b-view{background:#DBEAFE;color:#1E40AF;}
+.b-ok{background:#D1FAE5;color:#065F46;}
+.b-lock{background:#F3F4F6;color:var(--soft);}
+.b-admin{background:#EDE9FE;color:var(--purple);}
+.b-super{background:var(--gold3);color:#7C5A1A;border:1px solid rgba(201,147,58,.3);}
+.b-warn{background:#FEF3C7;color:#92400E;}
+.acard-arrow{color:var(--border);font-size:.9rem;flex-shrink:0;transition:color .2s;}
+.acard:hover .acard-arrow{color:var(--gold);}
+
+/* ── MODALS ── */
+.modal{display:none;position:fixed;inset:0;background:rgba(11,30,58,.6);backdrop-filter:blur(4px);z-index:999;place-items:center;padding:1rem;}
 .modal.open{display:grid;}
-.modal-box{background:#fff;border-radius:18px;width:100%;max-width:340px;overflow:hidden;animation:pop .22s ease;}
-@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
-.modal-hdr{padding:15px 18px;display:flex;justify-content:space-between;align-items:center;}
-.modal-hdr.navy{background:var(--navy);}
-.modal-hdr.orange{background:var(--warning);}
-.modal-hdr.red{background:var(--error);}
-.modal-hdr h3{color:#fff;font-size:.92rem;}
-.modal-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:1.2rem;cursor:pointer;}
-.modal-body{padding:18px;text-align:center;}
-.modal-icon{font-size:2.5rem;margin-bottom:.75rem;}
-.modal-body p{font-size:.84rem;color:var(--text-soft);line-height:1.6;margin-bottom:1.2rem;}
-.mbtn{width:100%;padding:12px;border:none;border-radius:10px;font-family:"DM Sans",sans-serif;font-weight:600;font-size:.87rem;cursor:pointer;margin-bottom:7px;}
-.mbtn-primary{background:var(--navy);color:#fff;}
-.mbtn-secondary{background:var(--gold-pale);color:var(--navy);border:1px solid var(--gold);}
-.footer{text-align:center;padding:2rem 1rem;font-size:.75rem;color:var(--text-soft);}
+.modal-card{
+  background:var(--white);border-radius:var(--r3);
+  width:100%;max-width:340px;overflow:hidden;
+  animation:pop .25s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 20px 60px rgba(11,30,58,.25);
+}
+@keyframes pop{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-hdr{padding:16px 20px;display:flex;justify-content:space-between;align-items:center;}
+.modal-hdr.navy{background:linear-gradient(135deg,var(--navy),var(--navy3));}
+.modal-hdr.orange{background:linear-gradient(135deg,#D97706,#B45309);}
+.modal-hdr.red{background:linear-gradient(135deg,var(--error),#922B21);}
+.modal-hdr h3{color:#fff;font-size:.92rem;font-weight:600;}
+.modal-x{background:none;border:none;color:rgba(255,255,255,.5);font-size:1.2rem;cursor:pointer;}
+.modal-body{padding:20px;text-align:center;}
+.modal-moji{font-size:2.8rem;margin-bottom:.75rem;}
+.modal-body p{font-size:.84rem;color:var(--soft);line-height:1.65;margin-bottom:1.25rem;}
+.mbtn{width:100%;padding:12px;border:none;border-radius:11px;font-family:"DM Sans",sans-serif;font-weight:600;font-size:.87rem;cursor:pointer;margin-bottom:7px;transition:all .2s;}
+.mbtn-navy{background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;}
+.mbtn-gold{background:linear-gradient(135deg,var(--gold),#A87830);color:#fff;}
+.mbtn-soft{background:var(--cream);color:var(--navy);border:1px solid var(--border);}
+
+.footer{text-align:center;padding:1.5rem 1rem 2rem;font-size:.72rem;color:var(--soft);}
+.footer strong{color:var(--navy);font-weight:600;}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="logo">🤝</div>
-  <h1>Notre Tontine</h1>
-  <p>Bienvenue ! Connecte-toi pour accéder à tes services.</p>
-  <div class="gold-bar"></div>
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="logo-wrap">
+    <div class="logo-ring">
+      <svg class="logo-svg" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Two hands shaking -->
+        <!-- Left hand -->
+        <path d="M4 28 C4 28 8 24 12 23 L18 22 C20 22 21 23 21 25 L21 26" stroke="#C9933A" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <path d="M21 26 C21 26 20 28 18 29 L14 31 C12 32 11 34 13 35 L15 36" stroke="#C9933A" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <path d="M18 29 L20 31 C21 32 21 34 19 35 L17 37" stroke="#C9933A" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M20 31 L22 33 C23 34 23 36 21 37 L20 38" stroke="#C9933A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+        <!-- Right hand -->
+        <path d="M48 28 C48 28 44 24 40 23 L34 22 C32 22 31 23 31 25 L31 26" stroke="#E8B96A" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <path d="M31 26 C31 26 32 28 34 29 L38 31 C40 32 41 34 39 35 L37 36" stroke="#E8B96A" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <path d="M34 29 L32 31 C31 32 31 34 33 35 L35 37" stroke="#E8B96A" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M32 31 L30 33 C29 34 29 36 31 37 L32 38" stroke="#E8B96A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+        <!-- Clasped center -->
+        <path d="M21 26 C22 27 24 28 26 28 C28 28 30 27 31 26" stroke="#C9933A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <circle cx="26" cy="28" r="3.5" fill="rgba(201,147,58,.25)" stroke="#C9933A" stroke-width="1.5"/>
+        <!-- Shield top -->
+        <path d="M18 16 L26 12 L34 16 L34 22 C34 26 30 29 26 30 C22 29 18 26 18 22 Z" fill="rgba(201,147,58,.15)" stroke="#C9933A" stroke-width="1.5" stroke-linejoin="round"/>
+        <text x="26" y="22.5" text-anchor="middle" fill="#C9933A" font-size="7" font-weight="700" font-family="sans-serif">ST</text>
+      </svg>
+    </div>
+    <div class="logo-name">SécuTontine</div>
+  </div>
+  <div class="gold-rule"></div>
+  <div class="logo-tagline">Tontine numérique & sécurisée</div>
+  <p class="hero-desc">Gérez votre tontine en toute confiance. Inscriptions, cotisations et réceptions sécurisées.</p>
 </div>
 
+<!-- ── TOP BAR (après connexion) ── -->
 <div class="top-bar" id="topBar">
-  <div class="top-greeting">Bonjour, <span id="topName">—</span> 👋</div>
+  <div class="top-left">
+    <div class="top-logo">
+      <svg width="18" height="18" viewBox="0 0 52 52" fill="none">
+        <path d="M18 16 L26 12 L34 16 L34 22 C34 26 30 29 26 30 C22 29 18 26 18 22 Z" fill="rgba(201,147,58,.8)" stroke="#C9933A" stroke-width="1.5"/>
+        <text x="26" y="22.5" text-anchor="middle" fill="#fff" font-size="8" font-weight="700" font-family="sans-serif">ST</text>
+      </svg>
+    </div>
+    <div>
+      <div class="top-appname">SécuTontine</div>
+      <div class="top-greeting" id="topGreeting">Bienvenue</div>
+    </div>
+  </div>
   <div class="top-right">
     <span class="role-pill" id="rolePill"></span>
-    <button class="btn-logout-sm" onclick="doLogout()">Déconnexion</button>
+    <button class="btn-logout-sm" onclick="doLogout()">Quitter</button>
   </div>
 </div>
 
+<!-- ── BODY ── -->
 <div class="body">
+
+  <!-- LOGIN -->
   <div id="sectionLogin">
-    <div class="login-box">
-      <h3>🔑 Connexion</h3>
+    <div class="float-card">
+      <div class="card-eyebrow">🔑 Connexion membre</div>
       <div class="field">
         <label>Numéro de téléphone</label>
         <input type="tel" id="loginTel" placeholder="+237 6XX XX XX XX">
@@ -117,82 +296,80 @@ body{font-family:"DM Sans",sans-serif;background:var(--cream);min-height:100vh;}
       </div>
       <button class="btn-login" onclick="doLogin()">Se connecter</button>
       <div class="login-err" id="loginErr">❌ Téléphone ou mot de passe incorrect.</div>
+      <div class="register-row">Pas encore inscrit(e) ? <a href="inscription_tontine.html">S'inscrire ici →</a></div>
     </div>
-    <div class="register-link">Pas encore inscrit(e) ? <a href="inscription_tontine.html">S'inscrire ici</a></div>
   </div>
-  <div id="sectionMember" style="display:none;">
+
+  <!-- MENU APRÈS CONNEXION -->
+  <div id="sectionMember" style="display:none;padding-top:1.5rem;">
     <div id="statusZone"></div>
     <div id="linksZone"></div>
   </div>
+
 </div>
 
-<div class="footer">Tontine Sécurisée — Tous droits réservés</div>
+<div class="footer"><strong>SécuTontine</strong> — Sécurité & confiance pour votre groupe</div>
 
-<!-- MODAL admin -->
+<!-- MODALS -->
 <div class="modal" id="modalAdmin">
-  <div class="modal-box">
-    <div class="modal-hdr navy"><h3>Espace Admin</h3><button class="modal-close" onclick="closeModal('modalAdmin')">✕</button></div>
+  <div class="modal-card">
+    <div class="modal-hdr navy"><h3>Espace Administration</h3><button class="modal-x" onclick="closeModal('modalAdmin')">✕</button></div>
     <div class="modal-body">
-      <div class="modal-icon">🛡️</div>
-      <p>Tu vas accéder au tableau de bord admin. Connecte-toi avec ton mot de passe admin.</p>
-      <button class="mbtn mbtn-primary" onclick="window.location.href='admin_tontine.html'">Continuer</button>
-      <button class="mbtn mbtn-secondary" onclick="closeModal('modalAdmin')">Retour</button>
+      <div class="modal-moji">🛡️</div>
+      <p>Tu accèdes à l'espace administrateur. Connecte-toi avec ton mot de passe admin.</p>
+      <button class="mbtn mbtn-navy" onclick="window.location.href='admin_tontine.html'">Accéder au tableau de bord</button>
+      <button class="mbtn mbtn-soft" onclick="closeModal('modalAdmin')">Retour</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL action admin uniquement -->
 <div class="modal" id="modalNoEdit">
-  <div class="modal-box">
-    <div class="modal-hdr orange"><h3>Action non autorisée</h3><button class="modal-close" onclick="closeModal('modalNoEdit')">✕</button></div>
+  <div class="modal-card">
+    <div class="modal-hdr orange"><h3>Action non autorisée</h3><button class="modal-x" onclick="closeModal('modalNoEdit')">✕</button></div>
     <div class="modal-body">
-      <div class="modal-icon">🚫</div>
-      <p>Seul un <strong>administrateur</strong> peut modifier des informations ou effectuer cette action.<br><br>Tu peux consulter mais pas modifier.</p>
-      <button class="mbtn mbtn-secondary" onclick="closeModal('modalNoEdit')">Compris</button>
+      <div class="modal-moji">🚫</div>
+      <p>Seul un <strong>administrateur</strong> peut effectuer cette action ou modifier des informations existantes.<br><br>Tu peux consulter mais pas modifier.</p>
+      <button class="mbtn mbtn-soft" onclick="closeModal('modalNoEdit')">Compris</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL Drive autres membres -->
-<div class="modal" id="modalDrivePrivate">
-  <div class="modal-box">
-    <div class="modal-hdr orange"><h3>Accès restreint</h3><button class="modal-close" onclick="closeModal('modalDrivePrivate')">✕</button></div>
+<div class="modal" id="modalDrive">
+  <div class="modal-card">
+    <div class="modal-hdr orange"><h3>Accès restreint</h3><button class="modal-x" onclick="closeModal('modalDrive')">✕</button></div>
     <div class="modal-body">
-      <div class="modal-icon">📁</div>
-      <p>Les dossiers des <strong>autres membres</strong> sont confidentiels.<br><br>Tu peux uniquement accéder à <strong>ton propre dossier</strong>. Les admins ont accès à tous les dossiers.</p>
-      <button class="mbtn mbtn-primary" id="btnMyDrive" onclick="openMyDrive()">Voir mon dossier</button>
-      <button class="mbtn mbtn-secondary" onclick="closeModal('modalDrivePrivate')">Retour</button>
+      <div class="modal-moji">📁</div>
+      <p>Les dossiers des <strong>autres membres</strong> sont confidentiels.<br><br>Tu peux uniquement accéder à <strong>ton propre dossier</strong>.</p>
+      <button class="mbtn mbtn-gold" onclick="openMyDrive()">Voir mon dossier</button>
+      <button class="mbtn mbtn-soft" onclick="closeModal('modalDrive')">Retour</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL GitHub/Apps Script -->
 <div class="modal" id="modalSuperOnly">
-  <div class="modal-box">
-    <div class="modal-hdr red"><h3>Accès Super-Admin</h3><button class="modal-close" onclick="closeModal('modalSuperOnly')">✕</button></div>
+  <div class="modal-card">
+    <div class="modal-hdr red"><h3>Accès Super-Admin</h3><button class="modal-x" onclick="closeModal('modalSuperOnly')">✕</button></div>
     <div class="modal-body">
-      <div class="modal-icon">🔒</div>
-      <p>GitHub et Google Apps Script sont des outils <strong>réservés exclusivement à la Super-Administratrice</strong>.<br><br>Ces outils permettent de modifier le code de l'application.</p>
-      <button class="mbtn mbtn-secondary" onclick="closeModal('modalSuperOnly')">Compris</button>
+      <div class="modal-moji">🔒</div>
+      <p>Cet outil est réservé exclusivement à la <strong>Super-Administratrice</strong>.<br><br>Il permet de modifier le code de l'application.</p>
+      <button class="mbtn mbtn-soft" onclick="closeModal('modalSuperOnly')">Compris</button>
     </div>
   </div>
 </div>
 
 <script>
-const K_PWD     = 'tontine_members_pwd';
-const K_SESSION = 'tontine_member_session';
-const K_STATUS  = 'tontine_status';
-let currentMember = null;
+const K_PWD='tontine_members_pwd', K_SESSION='tontine_member_session', K_STATUS='tontine_status';
+let currentMember=null;
 
 function getDb(){try{return JSON.parse(localStorage.getItem(K_PWD)||'{}');}catch{return{};}}
 function getStatuses(){try{return JSON.parse(localStorage.getItem(K_STATUS)||'{}');}catch{return{};}}
 
 function doLogin(){
-  const tel = document.getElementById('loginTel').value.trim().replace(/\s/g,'');
-  const pwd = document.getElementById('loginPwd').value;
-  const err = document.getElementById('loginErr');
+  const tel=document.getElementById('loginTel').value.trim().replace(/\s/g,'');
+  const pwd=document.getElementById('loginPwd').value;
+  const err=document.getElementById('loginErr');
   err.classList.remove('show');
-  const superPwd = localStorage.getItem('tontine_super_pwd')||'superadmin2024';
+  const superPwd=localStorage.getItem('tontine_super_pwd')||'superadmin2024';
   if(pwd===superPwd&&(tel===''||tel==='admin'||tel==='superadmin')){
     enterSession({nom:'Administratrice',prenom:'',role:'superadmin',status:'approved',tel:'superadmin',cni:'SA'});
     return;
@@ -212,17 +389,14 @@ function enterSession(m){
   showMemberView(m);
 }
 
-function doLogout(){
-  sessionStorage.removeItem(K_SESSION);
-  location.reload();
-}
+function doLogout(){sessionStorage.removeItem(K_SESSION);location.reload();}
 
 function showMemberView(m){
   currentMember=m;
   document.getElementById('sectionLogin').style.display='none';
   document.getElementById('sectionMember').style.display='block';
   document.getElementById('topBar').classList.add('show');
-  document.getElementById('topName').textContent=(m.prenom+' '+m.nom).trim();
+  document.getElementById('topGreeting').textContent='Bonjour, '+((m.prenom||'')+(m.nom?' '+m.nom:'')).trim()+' 👋';
   const pill=document.getElementById('rolePill');
   if(m.role==='superadmin'){pill.textContent='👑 Super-Admin';pill.className='role-pill pill-super';}
   else if(m.role==='admin'){pill.textContent='🛡️ Admin';pill.className='role-pill pill-admin';}
@@ -235,14 +409,14 @@ function renderStatus(m){
   const z=document.getElementById('statusZone');
   if(m.role==='superadmin'){z.innerHTML='';return;}
   const cfg={
-    approved:{cls:'approved',icon:'✅',title:'Dossier approuvé',desc:"Tu es officiellement membre de la tontine. Bienvenue !"},
-    pending:{cls:'pending',icon:'⏳',title:'Dossier en attente',desc:"Ton dossier est en cours de vérification. Tu seras notifié(e) dès validation."},
-    rejected:{cls:'rejected',icon:'❌',title:'Dossier refusé',desc:"Ton dossier a été refusé. Contacte l'administratrice pour plus d'informations."}
+    approved:{cls:'approved',icon:'✅',title:'Dossier approuvé',desc:"Tu es officiellement membre de SécuTontine. Bienvenue !"},
+    pending:{cls:'pending',icon:'⏳',title:'En attente de validation',desc:"Ton dossier est en cours de vérification. Tu seras notifié(e) dès validation."},
+    rejected:{cls:'rejected',icon:'❌',title:'Dossier refusé',desc:"Ton dossier a été refusé. Contacte l'administratrice pour plus d'infos."}
   };
   const s=cfg[m.status]||cfg['pending'];
   z.innerHTML=`<div class="status-card ${s.cls}">
-    <div class="status-icon">${s.icon}</div>
-    <div class="st-${s.cls}"><strong>${s.title}</strong><p>${s.desc}</p></div>
+    <div class="s-icon ${s.cls}">${s.icon}</div>
+    <div><div class="s-title">${s.title}</div><div class="s-desc">${s.desc}</div></div>
   </div>`;
 }
 
@@ -253,94 +427,76 @@ function renderLinks(m){
   const isOk=m.status==='approved'||isAd;
   let h='';
 
-  // ── ESPACE MEMBRE (tout le monde) ───────────────────────────────────
-  h+='<div class="section-title">👤 Espace membre</div>';
-
-  // Inscription
-  h+=card('i-green','📝','S\'inscrire / Voir le formulaire d\'inscription',"Pour les nouveaux membres du groupe.",'inscription_tontine.html','','›');
-
-  // Réception
+  h+='<div class="section-label">Espace membre</div>';
+  h+=lnk('ic-green','📝',"S'inscrire","Pour les nouveaux membres.",'inscription_tontine.html','','›');
   if(isOk){
-    h+=card('i-blue','💰','Confirmer une réception de fonds',"C'est ton tour ? Remplis le formulaire.",'formulaire_tontine_sheets.html','<span class="card-badge badge-ok">✅ Disponible</span>','›');
+    h+=lnk('ic-blue','💳',"Soumettre une cotisation","Cotiser pour le tour d'un membre.",'cotisation_tontine.html','<span class="acard-badge b-ok">Disponible</span>','›');
+    h+=lnk('ic-gold','💰',"Confirmer une réception","C'est ton tour ? Remplis le formulaire.",'formulaire_tontine_sheets.html','<span class="acard-badge b-ok">Disponible</span>','›');
   } else {
-    h+=cardClick('i-gray','💰','Confirmer une réception de fonds',"Disponible après approbation de ton dossier.",'showNoEdit()','<span class="card-badge badge-lock">🔒 En attente</span>','›');
+    h+=btn('ic-gray','💳',"Soumettre une cotisation","Disponible après approbation.",'showNoEdit()','<span class="acard-badge b-lock">En attente</span>','›');
+    h+=btn('ic-gray','💰',"Confirmer une réception","Disponible après approbation.",'showNoEdit()','<span class="acard-badge b-lock">En attente</span>','›');
   }
 
-  // Cotisation
-  if(isOk){
-    h+=card('i-gold','💳','Soumettre une cotisation',"Cotiser pour le tour d'un autre membre.",'cotisation_tontine.html','<span class="card-badge badge-ok">✅ Disponible</span>','›');
-  } else {
-    h+=cardClick('i-gray','💳','Soumettre une cotisation',"Disponible après approbation de ton dossier.",'showNoEdit()','<span class="card-badge badge-lock">🔒 En attente</span>','›');
-  }
-
-  // Google Sheets — tout le monde peut voir
-  h+=card('i-green','📊','Google Sheets — Tableau des membres',"Consulter les données de la tontine.",'https://sheets.google.com','<span class="card-badge badge-view">👁️ Consultation</span>','↗');
-
-  // Google Drive — tout le monde mais message si non-admin
+  h+='<div class="section-label">Données & transparence</div>';
+  h+=lnk('ic-green','📊',"Google Sheets","Consulter les données de la tontine.",'https://sheets.google.com','<span class="acard-badge b-view">Consultation</span>','↗');
   if(isAd){
-    h+=card('i-blue','📁','Google Drive — Tous les dossiers',"Photos CNI, selfies et documents de tous les membres.",'https://drive.google.com','<span class="card-badge badge-admin">Accès complet</span>','↗');
+    h+=lnk('ic-blue','📁',"Google Drive","Photos et documents de tous les membres.",'https://drive.google.com','<span class="acard-badge b-admin">Accès complet</span>','↗');
   } else {
-    h+=cardClick('i-blue','📁','Google Drive — Mon dossier',"Tu peux accéder à ton propre dossier uniquement.",'showDriveModal()','<span class="card-badge badge-view">👁️ Ton dossier seulement</span>','↗');
+    h+=btn('ic-blue','📁',"Google Drive","Ton propre dossier uniquement.",'showDriveModal()','<span class="acard-badge b-view">Ton dossier</span>','↗');
   }
 
-  // Tableau de bord admin — tout le monde mais connexion admin requise
-  h+='<div class="section-title">🔐 Administration</div>';
+  h+='<div class="section-label">Administration</div>';
   if(isAd){
-    h+=card('i-purple','🛡️','Tableau de bord Admin',"Gérer les membres, approuver, gérer les rôles.",`admin_tontine.html`,`<span class="card-badge ${isSA?'badge-super':'badge-admin'}">${isSA?'👑 Super-Admin':'🛡️ Admin'}</span>`,'›');
+    h+=lnk('ic-purple','🛡️',"Tableau de bord Admin","Gérer membres, cotisations et rôles.",'admin_tontine.html','<span class="acard-badge '+(isSA?'b-super':'b-admin')+'">'+(isSA?'👑 Super-Admin':'🛡️ Admin')+'</span>','›');
   } else {
-    h+=cardClick('i-purple','🛡️','Tableau de bord Admin',"Visible à tous, accessible aux admins uniquement.",'showAdminModal()','<span class="card-badge badge-lock">🔒 Admins uniquement</span>','›');
+    h+=btn('ic-purple','🛡️',"Tableau de bord Admin","Réservé aux administrateurs.",'showAdminModal()','<span class="acard-badge b-lock">Admins uniquement</span>','›');
   }
-
-  // ── OUTILS SUPER-ADMIN UNIQUEMENT ───────────────────────────────────
-  h+='<div class="section-title">⚙️ Outils</div>';
 
   if(isSA){
-    h+=card('i-gold','🔗','Tous mes liens',"Accès rapide à tous tes outils.",'liens.html','<span class="card-badge badge-super">👑 Super-Admin</span>','›');
-    h+=card('i-teal','⚙️','Google Apps Script',"Mettre à jour le script backend.",'https://script.google.com','<span class="card-badge badge-super">👑 Super-Admin</span>','↗');
-    h+=card('i-gray','🐙','GitHub — Dépôt Tontine',"Mettre à jour les fichiers HTML.",'https://github.com/corneliasuzie/Tontine','<span class="card-badge badge-super">👑 Super-Admin</span>','↗');
-    h+=card('i-red','📧','Gmail',"Notifications automatiques.",'https://mail.google.com','','↗');
-  } else if(isAd){
-    // Admin voit mais pas GitHub/Apps Script
-    h+=cardClick('i-teal','⚙️','Google Apps Script',"Réservé à la Super-Administratrice.",'showSuperOnly()','<span class="card-badge badge-lock">🔒 Super-Admin</span>','↗');
-    h+=cardClick('i-gray','🐙','GitHub — Dépôt Tontine',"Réservé à la Super-Administratrice.",'showSuperOnly()','<span class="card-badge badge-lock">🔒 Super-Admin</span>','↗');
+    h+='<div class="section-label">Outils Super-Admin</div>';
+    h+=lnk('ic-gold','🔗',"Tous mes liens","Accès rapide à tous les outils.",'liens.html','<span class="acard-badge b-super">👑 Super-Admin</span>','›');
+    h+=lnk('ic-teal','⚙️',"Google Apps Script","Backend de l'application.",'https://script.google.com','<span class="acard-badge b-super">👑 Super-Admin</span>','↗');
+    h+=lnk('ic-navy','🐙',"GitHub — Dépôt","Mettre à jour les fichiers.",'https://github.com/corneliasuzie/Tontine','<span class="acard-badge b-super">👑 Super-Admin</span>','↗');
+    h+=lnk('ic-red','📧',"Gmail","Notifications automatiques.",'https://mail.google.com','','↗');
   } else {
-    // Membre simple voit mais tout est bloqué
-    h+=cardClick('i-teal','⚙️','Google Apps Script',"Réservé à la Super-Administratrice.",'showSuperOnly()','<span class="card-badge badge-lock">🔒 Super-Admin</span>','↗');
-    h+=cardClick('i-gray','🐙','GitHub — Dépôt Tontine',"Réservé à la Super-Administratrice.",'showSuperOnly()','<span class="card-badge badge-lock">🔒 Super-Admin</span>','↗');
+    h+=btn('ic-teal','⚙️',"Google Apps Script","Super-Admin uniquement.",'showSuperOnly()','<span class="acard-badge b-lock">Super-Admin</span>','↗');
+    h+=btn('ic-navy','🐙',"GitHub — Dépôt","Super-Admin uniquement.",'showSuperOnly()','<span class="acard-badge b-lock">Super-Admin</span>','↗');
   }
 
   z.innerHTML=h;
 }
 
-function card(icon,emoji,title,desc,href,badge,arrow){
-  const target=href.startsWith('http')?'target="_blank"':'';
-  return `<a class="card" href="${href}" ${target}>
-    <div class="card-icon ${icon}">${emoji}</div>
-    <div class="card-content"><div class="card-title">${title}</div><div class="card-desc">${desc}</div>${badge}</div>
-    <span class="card-arrow">${arrow}</span></a>`;
+function lnk(ic,emoji,title,desc,href,badge,arrow){
+  var target=href.startsWith('http')?'target="_blank"':'';
+  return '<a class="acard" href="'+href+'" '+target+'>'
+    +'<div class="acard-icon '+ic+'">'+emoji+'</div>'
+    +'<div class="acard-body"><div class="acard-title">'+title+'</div>'
+    +'<div class="acard-desc">'+desc+'</div>'+badge+'</div>'
+    +'<span class="acard-arrow">'+arrow+'</span></a>';
 }
-function cardClick(icon,emoji,title,desc,action,badge,arrow){
-  return `<div class="card blocked" onclick="${action}">
-    <div class="card-icon ${icon}">${emoji}</div>
-    <div class="card-content"><div class="card-title">${title}</div><div class="card-desc">${desc}</div>${badge}</div>
-    <span class="card-arrow">${arrow}</span></div>`;
+function btn(ic,emoji,title,desc,action,badge,arrow){
+  return '<div class="acard blocked" onclick="'+action+'">'
+    +'<div class="acard-icon '+ic+'">'+emoji+'</div>'
+    +'<div class="acard-body"><div class="acard-title">'+title+'</div>'
+    +'<div class="acard-desc">'+desc+'</div>'+badge+'</div>'
+    +'<span class="acard-arrow">'+arrow+'</span></div>';
 }
 
-function showAdminModal(){ document.getElementById('modalAdmin').classList.add('open'); }
-function showNoEdit(){     document.getElementById('modalNoEdit').classList.add('open'); }
-function showDriveModal(){ document.getElementById('modalDrivePrivate').classList.add('open'); }
-function showSuperOnly(){  document.getElementById('modalSuperOnly').classList.add('open'); }
-function closeModal(id){   document.getElementById(id).classList.remove('open'); }
+function showAdminModal(){document.getElementById('modalAdmin').classList.add('open');}
+function showNoEdit(){document.getElementById('modalNoEdit').classList.add('open');}
+function showDriveModal(){document.getElementById('modalDrive').classList.add('open');}
+function showSuperOnly(){document.getElementById('modalSuperOnly').classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
 
 function openMyDrive(){
-  closeModal('modalDrivePrivate');
-  // Open Drive filtered to member's own folder
-  window.open('https://drive.google.com/drive/search?q='+encodeURIComponent((currentMember.prenom||'')+' '+(currentMember.nom||'')),'_blank');
+  closeModal('modalDrive');
+  var q=((currentMember.prenom||'')+' '+(currentMember.nom||'')).trim();
+  window.open('https://drive.google.com/drive/search?q='+encodeURIComponent(q),'_blank');
 }
 
-window.onload=()=>{
-  const s=sessionStorage.getItem(K_SESSION);
-  if(s){try{showMemberView(JSON.parse(s));}catch{}}
+window.onload=function(){
+  var s=sessionStorage.getItem(K_SESSION);
+  if(s){try{showMemberView(JSON.parse(s));}catch(e){}}
 };
 </script>
 </body>
