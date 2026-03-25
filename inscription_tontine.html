@@ -657,15 +657,15 @@ async function submitForm() {
     enDeplacement: (document.getElementById("travellingCheck")&&document.getElementById("travellingCheck").checked)?"Oui":"Non",
   };
 
-  document.getElementById("sendingOverlay").classList.add("active");
+  document.getElementById("validationOverlay").classList.add("active");
   document.getElementById("errorBanner").classList.remove("show");
   try{
     await fetch(scriptUrl,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-    document.getElementById("sendingOverlay").classList.remove("active");
+    document.getElementById("validationOverlay").classList.remove("active");
     document.getElementById("mainForm").style.display="none";
     document.getElementById("successScreen").classList.add("active");
   } catch{
-    document.getElementById("sendingOverlay").classList.remove("active");
+    document.getElementById("validationOverlay").classList.remove("active");
     document.getElementById("btnSubmit").disabled=false;
     document.getElementById("errorBanner").classList.add("show");
   }
