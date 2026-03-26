@@ -207,15 +207,15 @@
   </div>
 </div>
 
-<div class="sending-overlay" id="validationOverlay">
-    <div class="spinner"></div>
-    <p id="valMsg">Envoi en cours...</p>
-    <p id="valStep" style="font-size: 0.8rem; opacity: 0.8;"></p>
+<div class="sending-overlay" id="sendingOverlay">
+  <div class="spinner"></div>
+  <p>Envoi en cours…</p>
 </div>
 
 <script>
-const scriptUrl= "https://script.google.com/macros/s/AKfycbwIP20wDNYdBL9zcQFOEef8sLba0MN9OYcZDZU43SzS_Ub-hPxpxZF6x6Z2hTCc_lf9Nw/exec";
-  
+const STORAGE_KEY = "tontine_script_url";
+let scriptUrl = localStorage.getItem(STORAGE_KEY) || "";
+
 // ── KNOWN EMAIL DOMAINS ───────────────────────────────────────────────────
 const VALID_DOMAINS = ["gmail.com","yahoo.com","yahoo.fr","hotmail.com","hotmail.fr",
   "outlook.com","outlook.fr","live.com","live.fr","icloud.com","me.com",
@@ -657,15 +657,23 @@ async function submitForm() {
     enDeplacement: (document.getElementById("travellingCheck")&&document.getElementById("travellingCheck").checked)?"Oui":"Non",
   };
 
-  document.getElementById("validationOverlay").classList.add("active");
+  document.getElementById("sendingOverlay").classList.add("active");
   document.getElementById("errorBanner").classList.remove("show");
   try{
     await fetch(scriptUrl,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-    document.getElementById("validationOverlay").classList.remove("active");
+    document.getElementById("sendingOverlay").classList.remove("active");
     document.getElementById("mainForm").style.display="none";
     document.getElementById("successScreen").classList.add("active");
+    // Also try to notify admin via a GET ping
+    try {
+      const pingUrl = scriptUrl + "?action=ping&type=inscription&nom="
+        + encodeURIComponent(payload.nom||"")
+        + "&prenom=" + encodeURIComponent(payload.prenom||"")
+        + "&tel=" + encodeURIComponent(payload.tel||"");
+      fetch(pingUrl).catch(()=>{});
+    } catch(e){}
   } catch{
-    document.getElementById("validationOverlay").classList.remove("active");
+    document.getElementById("sendingOverlay").classList.remove("active");
     document.getElementById("btnSubmit").disabled=false;
     document.getElementById("errorBanner").classList.add("show");
   }
