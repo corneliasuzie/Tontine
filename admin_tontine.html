@@ -159,7 +159,10 @@
   </div>
   <div class="dash-body">
     <div class="page-nav" id="pageNav">
-      <button class="page-tab active" onclick="showPage('members',this)">👥 Membres</button>
+      <button class="page-tab active" onclick="showPage('members',this)">
+  👥 Membres
+  <span id="notifBadge" style="display:none;background:#C0392B;color:#fff;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:4px;vertical-align:middle;min-width:18px;text-align:center;">0</span>
+</button>
       <button class="page-tab" id="tabAdmins" onclick="showPage('admins',this)">🛡️ Gérer les admins</button>
       <button class="page-tab" id="tabManuel" onclick="showPage('manuel',this)">✏️ Membres manuels</button>
       <button class="page-tab" id="tabCotisations" onclick="showPage('cotisations',this)">💳 Cotisations</button>
@@ -172,6 +175,10 @@
         <div class="stat-card s-approved"><div class="stat-val" id="statApproved">0</div><div class="stat-label">Approuvés</div></div>
         <div class="stat-card s-pending"><div class="stat-val" id="statPending">0</div><div class="stat-label">En attente</div></div>
         <div class="stat-card s-rejected"><div class="stat-val" id="statRejected">0</div><div class="stat-label">Refusés</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;">
+        <span style="font-size:.78rem;color:var(--text-soft);" id="lastRefreshLabel">Actualisation auto toutes les 60s</span>
+        <button onclick="refreshMembres()" style="padding:6px 14px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;">🔄 Actualiser</button>
       </div>
       <div class="filter-tabs" style="margin-bottom:8px;">
         <button class="ftab active" onclick="switchSource('all',this)">👥 Tous</button>
@@ -343,16 +350,47 @@ function showDashboard(){
 
 let inscrits=[], beneficiaires=[];
 
-async function loadMembers(url){
-  document.getElementById('memberList').innerHTML='<div class="empty-state"><div class="icon">⏳</div><p>Chargement…</p></div>';
+let lastMemberCount = 0;
+let autoRefreshTimer = null;
+
+async function loadMembers(url, silent){
+  if(!silent) document.getElementById('memberList').innerHTML='<div class="empty-state"><div class="icon">⏳</div><p>Chargement…</p></div>';
   try{
-    const r=await fetch(url+'?action=getMembers'), d=await r.json();
+    const r = await fetch(url+'?action=getMembers&t='+Date.now());
+    const d = await r.json();
     inscrits = d.inscrits||[]; beneficiaires = d.beneficiaires||[];
-    // Merge into members based on active tab
     mergeAll(); renderStats(); renderMembers(); populateMemberSelect();
-  } catch{
+    // Detect new members
+    const total = inscrits.length + beneficiaires.length;
+    if(lastMemberCount > 0 && total > lastMemberCount){
+      const diff = total - lastMemberCount;
+      showToast('🔔 '+diff+' nouveau(x) membre(s) en attente !');
+      updateNotifBadge(inscrits.filter(m=>m.status==='pending').length);
+    }
+    lastMemberCount = total;
+    updateNotifBadge(inscrits.filter(m=>m.status==='pending').length);
+    // Start auto-refresh every 60s
+    if(!autoRefreshTimer){
+      autoRefreshTimer = setInterval(()=>{
+        const u = localStorage.getItem(K_URL);
+        if(u) loadMembers(u, true);
+      }, 60000);
+    }
+  } catch(err){
     inscrits=[]; beneficiaires=[];
     mergeAll(); renderStats(); renderMembers(); populateMemberSelect();
+    if(!silent) showToast('❌ Impossible de charger les données. Vérifie l URL du script.');
+  }
+}
+
+function updateNotifBadge(count){
+  let badge = document.getElementById('notifBadge');
+  if(!badge) return;
+  if(count > 0){
+    badge.textContent = count;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
   }
 }
 
@@ -424,12 +462,35 @@ function setStatus(cni,status){
   const s=JSON.parse(localStorage.getItem(K_STATUS)||'{}'); s[cni]=status; localStorage.setItem(K_STATUS,JSON.stringify(s));
   renderStats();renderMembers();
   showToast({approved:'✅ Membre approuvé !',rejected:'❌ Membre refusé.',pending:'⏳ Remis en attente.'}[status]);
-  // Notify via Apps Script (email + WhatsApp prep)
+  // Notify via Apps Script (email + WhatsApp)
   const url=localStorage.getItem(K_URL);
-  if(url) fetch(url+`?action=updateStatus&cni=${encodeURIComponent(cni)}&status=${status}&tel=${encodeURIComponent(m&&m.tel||'')}&&nom=${encodeURIComponent(m&&m.prenom+' '+m.nom||'')}&&email=${encodeURIComponent(m&&m.email||'')}`)
-    .then(r=>r.json()).then(d=>{ if(d.whatsappUrl) openWhatsApp(d.whatsappUrl,m,status); }).catch(()=>{});
-  // Fallback: open WhatsApp directly
-  if(m && m.tel) setTimeout(()=>promptWhatsApp(m,status),500);
+  if(url && status !== 'pending'){
+    const nom = m ? (m.prenom||'')+' '+(m.nom||'') : '';
+    const apiUrl = url
+      +'?action=updateStatus'
+      +'&cni='+encodeURIComponent(cni)
+      +'&status='+encodeURIComponent(status)
+      +'&tel='+encodeURIComponent(m&&m.tel||'')
+      +'&nom='+encodeURIComponent(nom)
+      +'&email='+encodeURIComponent(m&&m.email||'');
+    fetch(apiUrl)
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.whatsappUrl){
+          setTimeout(()=>{
+            if(confirm('Envoyer une notification WhatsApp à '+(m?m.prenom:'ce membre')+' ?')){
+              window.open(d.whatsappUrl,'_blank');
+            }
+          },500);
+        }
+      })
+      .catch(()=>{
+        // Fallback direct WhatsApp
+        if(m && m.tel) setTimeout(()=>promptWhatsApp(m,status),500);
+      });
+  } else if(m && m.tel && status !== 'pending'){
+    setTimeout(()=>promptWhatsApp(m,status),500);
+  }
 }
 
 function promptWhatsApp(m,status){
@@ -735,6 +796,13 @@ function generateReceiptAndWhatsApp(nom, tel, montant, tour, dateCot, mode, tran
       window.open(whatsappUrl,'_blank');
     }
   },1000);
+}
+
+function refreshMembres(){
+  const url = localStorage.getItem(K_URL);
+  if(!url){ showToast('⚙️ Configure l URL du script dans Paramètres'); return; }
+  document.getElementById('lastRefreshLabel').textContent = 'Dernière actualisation : ' + new Date().toLocaleTimeString('fr-FR');
+  loadMembers(url);
 }
 
 function showPage(page,el){
