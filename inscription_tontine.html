@@ -116,7 +116,13 @@
       <div class="field"><label>N° CNI <span class="req">*</span></label><input type="text" id="cni" placeholder="CM-12345678"><div class="field-error" id="err-cni">Requis.</div></div>
     </div>
     <div class="field"><label>Téléphone <span class="req">*</span></label><input type="tel" id="tel" placeholder="+237 6XX XX XX XX" oninput="formatTel(this)"><div class="field-error" id="err-tel">Requis.</div><div class="field-hint">Format : +237 6XX XX XX XX</div></div>
-    <div class="field"><label>Email (facultatif)</label><input type="email" id="email" placeholder="ton@email.com"></div>
+    <div class="field">
+      <label>Email (facultatif)</label>
+      <input type="email" id="email" placeholder="ton@email.com">
+      <div class="field-error" id="err-email" style="display:none;">Email invalide.</div>
+      <div class="field-valid" id="ok-email"></div>
+      <div class="field-checking" id="chk-email"></div>
+    </div>
 
     <!-- ADRESSE -->
     <div class="step-title" style="margin-top:1.5rem"><div class="step-num">2</div><h2>Ton adresse</h2></div>
@@ -240,17 +246,22 @@ function formatTel(input) { input.value = input.value.replace(/[^0-9+]/g, ""); }
 // ── SHOW VALIDATION OVERLAY ───────────────────────────────────────────────
 function showValidating(msg, step) {
   const ov = document.getElementById("validationOverlay");
+  if(!ov) return;
   ov.classList.add("active");
-  document.getElementById("valMsg").textContent = msg;
-  document.getElementById("valStep").textContent = step || "";
+  const vm = document.getElementById("valMsg");
+  const vs = document.getElementById("valStep");
+  if(vm) vm.textContent = msg;
+  if(vs) vs.textContent = step || "";
 }
 function hideValidating() {
-  document.getElementById("validationOverlay").classList.remove("active");
+  const ov = document.getElementById("validationOverlay");
+  if(ov) ov.classList.remove("active");
 }
 
 // ── FIELD STATE HELPERS ───────────────────────────────────────────────────
 function setFieldState(id, state, message) {
   const el  = document.getElementById(id);
+  if(!el) return;
   const err = document.getElementById("err-"+id);
   const ok  = document.getElementById("ok-"+id);
   const chk = document.getElementById("chk-"+id);
@@ -511,14 +522,18 @@ function showTravellingWarning(inputCity, gpsCity, gpsCountry) {
 
   // Insert before submit button
   const submitBtn = document.getElementById("btnSubmit");
-  submitBtn.parentNode.insertBefore(box, submitBtn);
+  if(submitBtn && submitBtn.parentNode) {
+    submitBtn.parentNode.insertBefore(box, submitBtn);
+  } else {
+    document.getElementById("mainForm").appendChild(box);
+  }
   box.scrollIntoView({behavior:"smooth", block:"center"});
 }
 
 async function retryWithTravel() {
   const check = document.getElementById("travellingCheck");
   if(!check || !check.checked) {
-    check.style.outline = "2px solid red";
+    if(check) check.style.outline = "2px solid red";
     return;
   }
   // Re-trigger submit
@@ -537,9 +552,15 @@ async function validate() {
   ["nom","prenom","dob","cni","tel"].forEach(id => {
     const el = document.getElementById(id);
     if(!el||!el.value.trim()){
-      setFieldState(id,"error","Ce champ est requis.");
+      if(el) el.classList.add("error");
+      const err = document.getElementById("err-"+id);
+      if(err){ err.textContent="Ce champ est requis."; err.classList.add("show"); }
       ok=false;
-    } else { el.classList.remove("error"); }
+    } else {
+      el.classList.remove("error");
+      const err = document.getElementById("err-"+id);
+      if(err) err.classList.remove("show");
+    }
   });
 
   // Tel length
@@ -589,7 +610,7 @@ async function validate() {
   const versoSrc = document.getElementById("prev-verso").src;
   if(!rectoSrc||!rectoSrc.startsWith("data:")) {
     hideValidating();
-    document.getElementById("err-recto").classList.add("show");
+    const er2=document.getElementById("err-recto"); if(er2) er2.classList.add("show");
     return false;
   }
 
@@ -597,18 +618,19 @@ async function validate() {
   const cniRes = await validatePhotoWithAI(rectoSrc, "cni");
   if(!cniRes.ok){
     hideValidating();
-    document.getElementById("area-recto").classList.add("error-state");
-    document.getElementById("err-recto").textContent = "❌ " + cniRes.msg + " Assure-toi que c'est bien une pièce d'identité.";
-    document.getElementById("err-recto").classList.add("show");
+    const ar=document.getElementById("area-recto"); if(ar) ar.classList.add("error-state");
+    const er=document.getElementById("err-recto"); 
+    if(er){ er.textContent = "Photo non valide : " + cniRes.msg; er.classList.add("show"); }
+    const er2=document.getElementById("err-recto"); if(er2) er2.classList.add("show");
     return false;
   }
-  document.getElementById("area-recto").classList.add("valid");
+  const arv=document.getElementById("area-recto"); if(arv) arv.classList.add("valid");
 
   // 3. Selfie validation
   const selfieSrc = document.getElementById("prev-selfie").src;
   if(!selfieSrc||!selfieSrc.startsWith("data:")) {
     hideValidating();
-    document.getElementById("err-selfie").classList.add("show");
+    const es2=document.getElementById("err-selfie"); if(es2) es2.classList.add("show");
     return false;
   }
 
@@ -616,12 +638,13 @@ async function validate() {
   const selfieRes = await validatePhotoWithAI(selfieSrc, "selfie");
   if(!selfieRes.ok){
     hideValidating();
-    document.getElementById("area-selfie").classList.add("error-state");
-    document.getElementById("err-selfie").textContent = "❌ " + selfieRes.msg + " Assure-toi que ton visage est bien visible.";
-    document.getElementById("err-selfie").classList.add("show");
+    const as=document.getElementById("area-selfie"); if(as) as.classList.add("error-state");
+    const es=document.getElementById("err-selfie");
+    if(es){ es.textContent = "Selfie non valide : " + selfieRes.msg; es.classList.add("show"); }
+    const es2=document.getElementById("err-selfie"); if(es2) es2.classList.add("show");
     return false;
   }
-  document.getElementById("area-selfie").classList.add("valid");
+  const asv=document.getElementById("area-selfie"); if(asv) asv.classList.add("valid");
 
   hideValidating();
   return true;
@@ -679,3 +702,13 @@ async function submitForm() {
   }
 }
 </script>
+</script>
+
+<div class="validation-overlay" id="validationOverlay">
+  <div class="val-spinner"></div>
+  <p id="valMsg">Vérification en cours...</p>
+  <div class="val-step" id="valStep"></div>
+</div>
+
+</body>
+</html>
